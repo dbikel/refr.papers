@@ -4,6 +4,7 @@
 \usepackage{algpseudocode}
 \usepackage{array}
 \usepackage{url}
+\usepackage{enumitem}
 
 \let\oldurl\url
 \makeatletter
@@ -128,49 +129,55 @@ of features and learning methods.
 
 Creating effective software tools for research is a tricky business.
 The classic tension between flexibility and efficiency arises with
-greater urgency. We want researchers to be able to try out many different
-ideas easily, but we also want them to be able to have a quick code-test-evaluate
-cycle. In particular, one of the goals of generating confusions for
-discriminative language modeling was to scale up such models to training
-data sizes orders of magnitude larger than have been used previously.
-So, we not only need basic efficiency in our tools, but they need
-to be designed from the ground up with distributed computing in mind.
+greater urgency. We want researchers to be able to try out many
+different ideas easily, but we also want them to be able to have a
+quick code-test-evaluate cycle.
 
-This chapter will describe the tools we have developed
-to solve not only our immediate research problem of exploring confusions
-for discriminative language modeling, but also the more general problem
-of reranking approaches to speech and language processing, including
-structured prediction. The desiderata for our tools were:
-\begin{itemize}
+ReFr grew out of the 2011 Johns Hopkins Summer Workshop, from the team
+using automatically generated confusions to synthesize training data
+for discriminative language models for speech and machine translation,
+led by Prof.\ Brian Roark of OHSU.  That approach required tools that
+would scale up to training data sizes orders of magnitude larger than
+had previously been used to build discriminative language models, so
+we not only needed our training and inference to be inherently fast,
+but we needed to design tools with distributed computing in mind from
+the outset.
+
+This paper describes the tools we have developed to solve not only the
+immediate research problem of exploring confusions for discriminative
+language modeling, but also the more general problem of reranking
+approaches to speech and language processing, including structured
+prediction. We designed ReFr to have the following properites:
+\begin{itemize}[noitemsep]
 \item ``library quality'' code
 \item industrial strength
 \item academic flexibility
 \item easy exploration of
-
-\begin{itemize}
-\item different types of features
-\item different update methods (\emph{e.g.}, MIRA-style, direct loss minimization,
-loss-sensitive)
-\item different learning methods (\emph{e.g.}, perceptron-style, log-linear,
-kernel methods)
-\end{itemize}
-\item modern, object-oriented design, complete with dynamic factories and
-dynamic composition for flexibility
-\item parallelizable, especially for distributed-computing environments
+  \begin{itemize}[noitemsep]
+    \item different types of features
+    \item different update methods (\emph{e.g.}, MIRA-style, direct
+      loss minimization, loss-sensitive)
+    \item different learning methods (\emph{e.g.}, perceptron-style,
+      log-linear, kernel methods)
+  \end{itemize}
+\item modern, object-oriented design, complete with dynamic factories
+  and dynamic composition for flexibility
+\item parallelizable, especially for distributed-computing
+  environments
 \end{itemize}
 \section{Data Format for I/O}
 
-Early on, our team discussed the relative merits of (a) rescoring
-lattices and other discriminative methods that were tightly coupled
-with the output of the baseline model versus (b) simply using a strict
-reranking approach applied to k-best lists. We settled on (b) reranking
+There are two main choices when building discriminative reranking
+models for speech or machine translation: (a) rescore a lattice or
+hypergraph or (b) simply use a strict reranking approach applied to
+k-best lists. For ReFr, early on we decided to use (b) reranking
 k-best lists. The primary reasons were the flexibility this would
 allow us in designing features, since k-best lists readily allow for
 sentence-level features in a way that, say, lattices do not, as well
-as the flexibility in designing tools, since it is far easier to define
-generic schemes of passing around k-best lists than it is for designing
-schemes to take speech lattices as well as machine translation hypergraphs
-or other, problem-specific data types.
+as the flexibility in designing tools, since it is far easier to
+define generic schemes of passing around k-best lists than it is for
+designing schemes to take speech lattices as well as machine
+translation hypergraphs or other, problem-specific data types.
 
 
 \subsection{\label{sub:protobufs}Google Protocol Buffers}
