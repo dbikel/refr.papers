@@ -84,20 +84,40 @@
 \maketitle
 %
 \begin{abstract}
-This paper describes an open-source reranker framework, ReFr, released
-in November, 2012 on Google Code
-(\texttt{http://refr.googlecode.com}).  ReFr was originally developed
-at the 2011 CLSP Summer Workshop, as part of the team working on
-confusion-based statistical language modeling for machine translation
-and speech recognition, led by Prof. Brian Roark of OHSU.  Our team
-was exploring methods that could employ large amounts of unlabeled
-data, as well as many different types of learning methods and feature
-types.  Thus, from early on, we wanted our software tools to be built
-with both parallelism in mind, but also with great flexibility.  ReFr
-is the result of that effort, implementing a flexible-yet-efficient
-framework for reranking models, such as for discriminative language
-modeling, as well as for any reranking or structured prediction
-problem.
+
+ReFr is a software architecture for specifying, training and using
+reranking models. Reranking models take the n-best output of some
+existing system and produce new scores for each of the n hypotheses
+that potentially induce a different ranking, ideally yielding better
+results than the original system. The Reranker Framework (ReFr for
+short) has some special support for building discriminative language
+models, but can be applied to any reranking problem.  The framework is
+designed with parallelism and scalability in mind, being able to run
+on any Hadoop cluster out of the box.  While extremely efficient, ReFr
+is also quite flexible, allowing researchers to explore a wide variety
+of features and learning methods.
+
+
+%% ReFr was released in November, 2012 on Google Code
+%% (\texttt{http://refr.googlecode.com}), and was originally developed at
+%% the 2011 CLSP Summer Workshop, as part of the team working on
+%% confusion-based statistical language modeling for machine translation
+%% and speech recognition, led by Prof. Brian Roark of OHSU.
+
+%% This paper describes an open-source reranker framework, ReFr, released
+%% in November, 2012 on Google Code
+%% (\texttt{http://refr.googlecode.com}).  ReFr was originally developed
+%% at the 2011 CLSP Summer Workshop, as part of the team working on
+%% confusion-based statistical language modeling for machine translation
+%% and speech recognition, led by Prof. Brian Roark of OHSU.  Our team
+%% was exploring methods that could employ large amounts of unlabeled
+%% data, as well as many different types of learning methods and feature
+%% types.  Thus, from early on, we wanted our software tools to be built
+%% with both parallelism in mind, but also with great flexibility.  ReFr
+%% is the result of that effort, implementing a flexible-yet-efficient
+%% framework for reranking models, such as for discriminative language
+%% modeling, as well as for any reranking or structured prediction
+%% problem.
 \end{abstract}
 \noindent{\bf Index Terms}: language modeling, discriminative language modeling, reranking, structured prediction
 
