@@ -688,7 +688,7 @@ general form of each assignment statement read by the interpreter is:
 <variable\_name> = <object>;
 \end{lyxcode}
 \normalsize
-where \inlinecode{<object>} is either a C++ primitive---one of
+where \inlinecode{<object>} is either a C++ primitive literal---one of
 \inlinecode{\{bool,int,double,string\}}---an array of C++ primitives, a
 Factory-constructible type or an array of Factory-constructible types
 that all have the same abstract type.  Arrays are expressed identically to array literals in C++, by surrounding a comma-separated list of objects with braces.  Underlying, they are implemented using \inlinecode{std::vector}. Figure \ref{fig:interpreter-config} shows an example of a ReFr configuration file.
