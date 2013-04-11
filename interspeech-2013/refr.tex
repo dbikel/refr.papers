@@ -205,35 +205,35 @@ and deserializing the data stored in the format. Code is generated
 to allow for native programming-language encapsulation of the data.
 For example, in C++ each item of data is stored in an object based
 on a object oriented data specification (a C++ \emph{class}) allowing
-for access to the data.
+for access to the data.\footnote{For the 2011 Johns Hopkins Workshop, we were targeting multiple tasks (ASR and MT), and so our toolkit provides a means to convert from two types of text-based n-best formats, one the output of an ASR system, the other the output of an MT system.  These conversion tools are not only useful in their own right, but serve as example implementations for any developer converting from their own, proprietary format to the Google Protocol Buffer format used by ReFr.}
 
-As a by-product of the fact that this workshop targeted multiple tasks
-(ASR and SMT), we had to address incompatible tools and data formats,
-which led us to a universal data format. In order to transform
-data generated in proprietary formats, we developed
-tools to convert data to our protocol buffer format. These tools are
-delivered with the open source toolkit in:
-\begin{verbatim} ./lm-confusion/dataconvert/
-\end{verbatim} 
-\begin{description}
-\item [{FST}] input (Roark's format)
-\begin{verbatim} ./lm-confusion/dataconvert/asrnbestproto
-\end{verbatim} 
-\item [{SMT}] input (Köhn's format)
-\begin{verbatim} ./lm-confusion/dataconvert/mtnbestproto
-\end{verbatim} 
-\end{description}
+%% As a by-product of the fact that this workshop targeted multiple tasks
+%% (ASR and SMT), we had to address incompatible tools and data formats,
+%% which led us to a universal data format. In order to transform
+%% data generated in proprietary formats, we developed
+%% tools to convert data to our protocol buffer format. These tools are
+%% delivered with the open source toolkit in:
+%% \begin{verbatim} ./lm-confusion/dataconvert/
+%% \end{verbatim} 
+%% \begin{description}
+%% \item [{FST}] input (Roark's format)
+%% \begin{verbatim} ./lm-confusion/dataconvert/asrnbestproto
+%% \end{verbatim} 
+%% \item [{SMT}] input (Köhn's format)
+%% \begin{verbatim} ./lm-confusion/dataconvert/mtnbestproto
+%% \end{verbatim} 
+%% \end{description}
 
-Each of these tools takes the predefined format as input and outputs a
-serialized set of protocol buffers.  These are encoded with Base64 encoding and
-(optionally) compressed (Base64 encoding is needed as protocol-buffers are not
-self-delimiting).  The disk-based format is able to be manually inspected using
-the \emph{protoview} tool, found in the repository at:
- \begin{verbatim} ./lm-confusion/dataconvert/mtnbestproto \end{verbatim}
+%% Each of these tools takes the predefined format as input and outputs a
+%% serialized set of protocol buffers.  These are encoded with Base64 encoding and
+%% (optionally) compressed (Base64 encoding is needed as protocol-buffers are not
+%% self-delimiting).  The disk-based format is able to be manually inspected using
+%% the \emph{protoview} tool, found in the repository at:
+%%  \begin{verbatim} ./lm-confusion/dataconvert/mtnbestproto \end{verbatim}
 
 \subsection{Protocol Buffer Snippet}
 
-Following is a snippet of the protocol buffer specification for the
+The following is a snippet of the protocol buffer specification for the
 training data input format.
 \scriptsize
 \begin{verbatim}
@@ -643,32 +643,36 @@ aware of the concrete subtypes of that base class that it can construct.
 Finally, each \texttt{Factory}-constructible abstract type needs to
 implement a single method called \texttt{RegisterInitializers} to
 specify the names of its data members that this language can initialize.
-The formal, BNF grammar for our language is shown in Figure \ref{fig:bnf-grammar}.
-\begin{figure*}
-\scriptsize
-\center
-\begin{tabular}{ll>{\raggedright}p{9cm}}
-\texttt{<spec>} & \texttt{::=} & \texttt{<type> '(' <member\_init\_list> ')'}\tabularnewline
-\texttt{<type>} & \texttt{::=} & name of type constructible by this factory\tabularnewline
-\texttt{<member\_init\_list>} & \texttt{::=} & \texttt{<member\_init> {[} ',' <member\_init> {]}{*} {[}','{]}}\tabularnewline
-\texttt{<member\_init>} & \texttt{::=} & \texttt{<primitive\_init> | <factory\_init>}\tabularnewline
-\texttt{<primitive\_init>} & \texttt{::=} & \texttt{<member\_name> '(' <literal> ')'}\tabularnewline
-\texttt{<member\_name>} & \texttt{::=} & the name of the member to be initialized, as specified by \texttt{<type>}\textquoteright{}s
-\texttt{RegisterInitializers} method\tabularnewline
-\texttt{<literal>} & \texttt{::=} & \texttt{<string\_literal> | <double\_literal> | <int\_literal> | <bool\_literal>}\tabularnewline
-\texttt{<string\_literal>} & \texttt{::=} & a C++ string literal (a string of characters surrounded by double
-quotes); double quotes and backslashes may be escaped inside a string
-literal with a backslash; other escape sequences, such as \texttt{\textbackslash{}t}
-for the tab character, are currently not recognized\tabularnewline
-\texttt{<double\_literal>} & \texttt{::=} & a string that can be parsed by \texttt{atof}\tabularnewline
-\texttt{<int\_literal>} & \texttt{::=} & a string that can be parsed by \texttt{atoi}\tabularnewline
-\texttt{<bool\_literal>} & \texttt{::=} & \texttt{<string\_literal> | <double\_literal>}\tabularnewline
-\texttt{<factory\_init>} & \texttt{::=} & \texttt{<member\_name> '(' <spec> ')'}\tabularnewline
-\end{tabular}
 
-\caption{\label{fig:bnf-grammar}Grammar for interpreted language for dynamic
-object instantiation in the Reranker Framework.}
-\end{figure*}
+% Instead of presenting the reader with an inscrutable BNF of the
+% grammar, show an example of the interpreter config file.
+
+%% The formal, BNF grammar for our language is shown in Figure \ref{fig:bnf-grammar}.
+%% \begin{figure*}
+%% \scriptsize
+%% \center
+%% \begin{tabular}{ll>{\raggedright}p{9cm}}
+%% \texttt{<spec>} & \texttt{::=} & \texttt{<type> '(' <member\_init\_list> ')'}\tabularnewline
+%% \texttt{<type>} & \texttt{::=} & name of type constructible by this factory\tabularnewline
+%% \texttt{<member\_init\_list>} & \texttt{::=} & \texttt{<member\_init> {[} ',' <member\_init> {]}{*} {[}','{]}}\tabularnewline
+%% \texttt{<member\_init>} & \texttt{::=} & \texttt{<primitive\_init> | <factory\_init>}\tabularnewline
+%% \texttt{<primitive\_init>} & \texttt{::=} & \texttt{<member\_name> '(' <literal> ')'}\tabularnewline
+%% \texttt{<member\_name>} & \texttt{::=} & the name of the member to be initialized, as specified by \texttt{<type>}\textquoteright{}s
+%% \texttt{RegisterInitializers} method\tabularnewline
+%% \texttt{<literal>} & \texttt{::=} & \texttt{<string\_literal> | <double\_literal> | <int\_literal> | <bool\_literal>}\tabularnewline
+%% \texttt{<string\_literal>} & \texttt{::=} & a C++ string literal (a string of characters surrounded by double
+%% quotes); double quotes and backslashes may be escaped inside a string
+%% literal with a backslash; other escape sequences, such as \texttt{\textbackslash{}t}
+%% for the tab character, are currently not recognized\tabularnewline
+%% \texttt{<double\_literal>} & \texttt{::=} & a string that can be parsed by \texttt{atof}\tabularnewline
+%% \texttt{<int\_literal>} & \texttt{::=} & a string that can be parsed by \texttt{atoi}\tabularnewline
+%% \texttt{<bool\_literal>} & \texttt{::=} & \texttt{'true' | 'false'}\tabularnewline
+%% \texttt{<factory\_init>} & \texttt{::=} & \texttt{<member\_name> '(' <spec> ')'}\tabularnewline
+%% \end{tabular}
+
+%% \caption{\label{fig:bnf-grammar}Grammar for interpreted language for dynamic
+%% object instantiation in the Reranker Framework.}
+%% \end{figure*}
 
 
 
