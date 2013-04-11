@@ -6,6 +6,9 @@
 \usepackage{url}
 \usepackage{enumitem}
 
+% Make it easier to write code inline.
+\newcommand\inlinecode[1]{\scriptsize\texttt{#1}\normalsize}
+
 \let\oldurl\url
 \makeatletter
 \renewcommand*\url{%
@@ -552,8 +555,8 @@ interpreted language, let's look at a simple C++ class called \texttt{Person},
 shown in Figure \ref{fig:cpp-person-example}. 
 \begin{figure}
 \begin{lyxcode}
-//~A~class~to~represent~a~date~in~the~standard\\
-//~Gregorian~calendar.
+%//~A~class~to~represent~a~date~in~the~standard\\
+%//~Gregorian~calendar.
 
 ~class~Date~\{
 
@@ -575,8 +578,8 @@ shown in Figure \ref{fig:cpp-person-example}.
 
 \
 
-~//~A~class~to~represent~a~few~facts~about\\
-~//~a~person.
+%~//~A~class~to~represent~a~few~facts~about\\
+%~//~a~person.
 
 ~class~Person~\{
 
@@ -678,97 +681,157 @@ specify the names of its data members that this language can initialize.
 
 \subsubsection{Putting it all together}
 
-The Reranker Framework defines a common base class for all feature
-extractors called \texttt{FeatureExtractor}. Now, \texttt{FeatureExtractor}
-instances are \texttt{Factory}-constructible, and so the \texttt{FeatureExtractor}
-class ensures its concrete subclasses have a \texttt{RegisterInitializers}
-method. One of the concrete implementations of \texttt{FeatureExtractor}
-provided with the Reranker Framework is \texttt{NgramFeatureExtractor},
-which extracts n-gram features from a training or test instance's
-text on the fly.%
-\footnote{This is one of the pieces of the Reranker Framework that is specialized
-for discriminative language modeling.%
-} That class has two data members that can be initialized by a factory,
-one required and one optional. To show you how easy it is to \textquotedblleft{}declare\textquotedblright{}
-data members that need initialization, here is the exact code from
-the \texttt{NgramFeatureExtractor::RegisterInitializers} method:
+The Reranker Framework contains an extremely portable, lightweight
+interpreter of assignment statements in this C++-like language.  The
+general form of each assignment statement read by the interpreter is:
 \begin{lyxcode}
-\tiny
-virtual~void~RegisterInitializers(Initializers~\&initializers)~\{
-
-~~bool~required~=~true;
-
-~~initializers.Add(\textquotedbl{}n\textquotedbl{},~\&n\_,~required);
-
-~~initializers.Add(\textquotedbl{}prefix\textquotedbl{},~\&prefix\_);
-
-\}
+<variable\_name> = <object>;
+\end{lyxcode}
 \normalsize
-\end{lyxcode}
-The above code says that the \texttt{NgramFeatureExtractor} has a
-data member \texttt{n\_}, which happens to be an \texttt{int}, that
-is required to be initialized when an \texttt{NgramFeatureExtractor}
-instance is constructed by a \texttt{Factory}, and that the name of
-this variable will be \texttt{\textquotedbl{}n\textquotedbl{}} as
-far as the factory is concerned. It also says that it has a data member
-\texttt{prefix\_}, which happens to be of type \texttt{string}, whose
-factory name will be \texttt{\textquotedbl{}prefix\textquotedbl{}},
-and that is not required to be present in a specification string for
-an \texttt{NgramFeatureExtractor}.
+where \inlinecode{<object>} is either a C++ primitive---one of
+\inlinecode{\{bool,int,double,string\}}---an array of C++ primitives, a
+Factory-constructible type or an array of Factory-constructible types
+that all have the same abstract type.  Arrays are expressed identically to array literals in C++, by surrounding a comma-separated list of objects with braces.  Underlying, they are implemented using \inlinecode{std::vector}. Figure \ref{fig:interpreter-config} shows an example of a ReFr configuration file.
 
-Given the grammar described earlier, the following are all legal specification
-strings for constructing \texttt{NgramFeatureExtractor} instances:
+
+\begin{figure}
 \begin{lyxcode}
-NgramFeatureExtractor(n(3))
+// Specify the model output file.\\
+model\_file = \textquotedbl my\_model\_file\textquotedbl;
 
-NgramFeatureExtractor(n(2),~prefix(\textquotedbl{}foo:\textquotedbl{}))
+\
 
-NgramFeatureExtractor(prefix(\textquotedbl{}bar\textquotedbl{}),~n(4))
+// Construct a Model instance of run-time type\\
+// PerceptronModel, specifying a score comparator\\
+// object.\\
+model =\\
+~~PerceptronModel(\\
+~~~~name(\textquotedbl my model\textquotedbl),\\
+~~~~score\_comparator(DirectLossScoreComparator()));
 
-NgramFeatureExtractor(n(2),)
+\
+
+// Do run-time feature extraction using an\\
+// \textquotedbl executive feature extractor\textquotedbl~which\\
+// invokes the ExtractFeatures method from an\\
+// internal vector of FeatureExtractor instances.\\
+exec\_feature\_extractor =\\
+~~ExecutiveFeatureExtractorImpl(\\
+~~~~feature\_extractors(\{NgramFeatureExtractor(n(2)),\\
+~~~~~~~~~~~~~~~~~~~~~~~~RankFeatureExtractor()\});
+
+\
+
+// Specify to use the above set of feature\\
+// extractors for both training and dev datasets.\\
+training\_efe = exec\_feature\_extractor;\\
+dev\_efe = exec\_feature\_extractor;
+
+\
+
+// Specify the training and devtest files.\\
+training\_files = \{\textquotedbl training1.gz\textquotedbl,
+\textquotedbl training2.gz\textquotedbl\};\\
+devtest\_files = \{\textquotedbl dev1.gz\textquotedbl,
+\textquotedbl dev2.gz\textquotedbl\};
+
 \end{lyxcode}
-As you can see, the order of member initializers is not important
-(because each has a unique name), and you can optionally put a comma
-after the last initializer. The following are illegal specification
-strings for \texttt{NgramFeatureExtractor} instances:
-\begin{lyxcode}
-//~Illegal~specification~strings:
+\caption{\label{fig:interpreter-config}An example ReFr configuration file, read by its \inlinecode{Interpreter} class.}
+\end{figure}
 
-NgramFeatureExtractor(prefix(\textquotedbl{}foo\textquotedbl{}))
+% This section needs to be MUCH shorter.
 
-NgramFeatureExtractor()
+%% The Reranker Framework defines a common base class for all feature
+%% extractors called \texttt{FeatureExtractor}. Now, \texttt{FeatureExtractor}
+%% instances are \texttt{Factory}-constructible, and so the \texttt{FeatureExtractor}
+%% class ensures its concrete subclasses have a \texttt{RegisterInitializers}
+%% method. One of the concrete implementations of \texttt{FeatureExtractor}
+%% provided with the Reranker Framework is \texttt{NgramFeatureExtractor},
+%% which extracts n-gram features from a training or test instance's
+%% text on the fly.%
+%% \footnote{This is one of the pieces of the Reranker Framework that is specialized
+%% for discriminative language modeling.%
+%% } That class has two data members that can be initialized by a factory,
+%% one required and one optional. To show you how easy it is to \textquotedblleft{}declare\textquotedblright{}
+%% data members that need initialization, here is the exact code from
+%% the \texttt{NgramFeatureExtractor::RegisterInitializers} method:
+%% \begin{lyxcode}
+%% \tiny
+%% virtual~void~RegisterInitializers(Initializers~\&initializers)~\{
 
-NgramFeatureExtractor(n(3),~prefix(4))
-\end{lyxcode}
-In the first two cases, the specification strings are missing the
-required variable n, and in the final case, the optional prefix member
-is being initialized, but with an int literal instead of a string
-literal.
+%% ~~bool~required~=~true;
 
-As a more complex example, let us consider the abstract base class
-\texttt{Model}, which is also \texttt{Factory}-constructible. Each
-\texttt{Model} uses an instance of a comparator interface to determine
-the \textquotedblleft{}gold\textquotedblright{} and top-scoring candidates
-when training. This is the primary means by which the Reranker Framework
-allows the user to specify a way of picking $\hat{y}$ in Equation
-\ref{eq:perceptron-update}. The specification strings for constructing
-\texttt{Model} instances reveal how recursion is used for constructing
-complex objects in this interpreted language. For example, to construct
-a \texttt{PerceptronModel} instance with a \texttt{DirectLossScoreComparator}
-, one would use the following specification string:
-\begin{lyxcode}
-PerceptronModel(\\
-~~name(\textquotedbl{}MyPerceptronModel\textquotedbl{}),\\
-~~score\_comparator(DirectLossScoreComparator()))
-\end{lyxcode}
-The first member initialization, for the member called \texttt{name},
-specifies the unique name you can give to each \texttt{Model} instance
-(which is strictly for human consumption). The second member initialization,
-for the member called \texttt{score\_comparator}, overrides the default
-comparator used to compare candidate hypothesis scores. This second
-member is also an example of one \texttt{Factory}-constructible object
-being constructed as a data member of another \texttt{Factory}-constructible
-object.
+%% ~~initializers.Add(\textquotedbl{}n\textquotedbl{},~\&n\_,~required);
+
+%% ~~initializers.Add(\textquotedbl{}prefix\textquotedbl{},~\&prefix\_);
+
+%% \}
+%% \normalsize
+%% \end{lyxcode}
+%% The above code says that the \texttt{NgramFeatureExtractor} has a
+%% data member \texttt{n\_}, which happens to be an \texttt{int}, that
+%% is required to be initialized when an \texttt{NgramFeatureExtractor}
+%% instance is constructed by a \texttt{Factory}, and that the name of
+%% this variable will be \texttt{\textquotedbl{}n\textquotedbl{}} as
+%% far as the factory is concerned. It also says that it has a data member
+%% \texttt{prefix\_}, which happens to be of type \texttt{string}, whose
+%% factory name will be \texttt{\textquotedbl{}prefix\textquotedbl{}},
+%% and that is not required to be present in a specification string for
+%% an \texttt{NgramFeatureExtractor}.
+
+%% Given the grammar described earlier, the following are all legal specification
+%% strings for constructing \texttt{NgramFeatureExtractor} instances:
+%% \begin{lyxcode}
+%% NgramFeatureExtractor(n(3))
+
+%% NgramFeatureExtractor(n(2),~prefix(\textquotedbl{}foo:\textquotedbl{}))
+
+%% NgramFeatureExtractor(prefix(\textquotedbl{}bar\textquotedbl{}),~n(4))
+
+%% NgramFeatureExtractor(n(2),)
+%% \end{lyxcode}
+%% As you can see, the order of member initializers is not important
+%% (because each has a unique name), and you can optionally put a comma
+%% after the last initializer. The following are illegal specification
+%% strings for \texttt{NgramFeatureExtractor} instances:
+%% \begin{lyxcode}
+%% //~Illegal~specification~strings:
+
+%% NgramFeatureExtractor(prefix(\textquotedbl{}foo\textquotedbl{}))
+
+%% NgramFeatureExtractor()
+
+%% NgramFeatureExtractor(n(3),~prefix(4))
+%% \end{lyxcode}
+%% In the first two cases, the specification strings are missing the
+%% required variable n, and in the final case, the optional prefix member
+%% is being initialized, but with an int literal instead of a string
+%% literal.
+
+%% As a more complex example, let us consider the abstract base class
+%% \texttt{Model}, which is also \texttt{Factory}-constructible. Each
+%% \texttt{Model} uses an instance of a comparator interface to determine
+%% the \textquotedblleft{}gold\textquotedblright{} and top-scoring candidates
+%% when training. This is the primary means by which the Reranker Framework
+%% allows the user to specify a way of picking $\hat{y}$ in Equation
+%% \ref{eq:perceptron-update}. The specification strings for constructing
+%% \texttt{Model} instances reveal how recursion is used for constructing
+%% complex objects in this interpreted language. For example, to construct
+%% a \texttt{PerceptronModel} instance with a \texttt{DirectLossScoreComparator}
+%% , one would use the following specification string:
+%% \begin{lyxcode}
+%% PerceptronModel(\\
+%% ~~name(\textquotedbl{}MyPerceptronModel\textquotedbl{}),\\
+%% ~~score\_comparator(DirectLossScoreComparator()))
+%% \end{lyxcode}
+%% The first member initialization, for the member called \texttt{name},
+%% specifies the unique name you can give to each \texttt{Model} instance
+%% (which is strictly for human consumption). The second member initialization,
+%% for the member called \texttt{score\_comparator}, overrides the default
+%% comparator used to compare candidate hypothesis scores. This second
+%% member is also an example of one \texttt{Factory}-constructible object
+%% being constructed as a data member of another \texttt{Factory}-constructible
+%% object.
 
 
 \subsection{Feature extraction}
@@ -793,8 +856,8 @@ features from files.%
 class for such feature extractors.%
 } The class \texttt{ExecutiveFeatureExtractor} handles the run-time
 construction and initialization of a suite of \texttt{FeatureExtractor}\emph{
-}instances to be run on each problem instance at run-time. It uses
-an internal \texttt{Factory} instance to accomplish this. 
+}instances to be run on each problem instance at run-time.
+%It uses an internal \texttt{Factory} instance to accomplish this. 
 
 
 \subsection{Training}
