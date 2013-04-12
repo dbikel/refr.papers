@@ -173,14 +173,13 @@ prediction. We designed ReFr to have the following properites:
 There are two main choices when building discriminative reranking
 models for speech or machine translation: (a) rescore a lattice or
 hypergraph or (b) simply use a strict reranking approach applied to
-k-best lists. For ReFr, early on we decided to use (b) reranking
-k-best lists. The primary reasons were the flexibility this would
-allow us in designing features, since k-best lists readily allow for
-sentence-level features in a way that, say, lattices do not, as well
-as the flexibility in designing tools, since it is far easier to
-define generic schemes of passing around k-best lists than it is for
-designing schemes to take speech lattices as well as machine
-translation hypergraphs or other, problem-specific data types.
+n-best lists. For ReFr, early on we decided to use (b) reranking
+n-best lists. The primary reasons were the flexibility this would
+allow us in designing features and tools. N-best lists readily allow for
+sentence-level features in a way that, say, lattices do not.
+Additionally, it is far easier to define generic schemes of passing around
+n-best lists than it is for designing schemes to take speech lattices as well
+as machine translation hypergraphs or other, problem-specific data types.
 
 
 \subsection{\label{sub:protobufs}Google Protocol Buffers}
@@ -189,7 +188,7 @@ Supervised machine learning is based on the supply of labeled (supervised)
 examples from which a model is trained.  A training algorithm is used to induce
 the model which best explains the supervised data, while at the same time being
 robust to data not seen in the supervised dataset (what is referred to as
-regularization of a model).  The general paradigm is true for all supervised
+the generalization of a model).  The general paradigm is true for all supervised
 training algorithms and is also true in the discriminative training algorithms
 we use for our experiments in this project. Although not critical when building
 a small system which expects relatively little variation in the input data, the
@@ -222,7 +221,7 @@ for access to the data.\footnote{For the 2011 Johns Hopkins Workshop, we were ta
 %% \item [{FST}] input (Roark's format)
 %% \begin{verbatim} ./lm-confusion/dataconvert/asrnbestproto
 %% \end{verbatim} 
-%% \item [{SMT}] input (Köhn's format)
+%% \item [{SMT}] input (K\"{o}hn's format)
 %% \begin{verbatim} ./lm-confusion/dataconvert/mtnbestproto
 %% \end{verbatim} 
 %% \end{description}
@@ -263,22 +262,22 @@ used by the training and inference tools.  The protocol buffer specifications is
 delivered with the toolkit (one for the model format and one for the data
 format).
 \begin{verbatim}
-./lm-confusion/proto/model.proto
-./lm-confusion/proto/data.proto
+./refr/src/proto/model.proto
+./refr/src/proto/data.proto
 \end{verbatim}
 
 
 \section{Core learning framework}
 
 Consider Algorithm \ref{alg:basic-perceptron}, which describes the
-training procedure for a generic perceptron-style algorithm. Each
+training procedure for a generic online-learning algorithm. Each
 training example $e_{i}$ comprises a set of \emph{candidate hypotheses},
 each of which is projected via some function $\Phi$ into a \emph{feature
-space}, $\mathbb{R}^{N}$. We typically think of $\Phi$ as being
+space}, $\mathbb{R}^{F}$. We typically think of $\Phi$ as being
 a suite of \emph{feature functions}, one per dimension.\emph{ }The\emph{
 }model itself is defined as a weight vector in this space, $w$. Decoding,
 or inference, is carried out simply by taking the dot product of the
-model and a test instance. More generally, any kernel function $K$
+model and a test instance. More generally, any kernel function $\mathcal{K}$
 may be used. The training procedure iterates over the training data
 $T$---each iteration is called an \emph{epoch}---until the $\Call{NeedToKeepTraining}{}()$
 predicate returns \texttt{false}. Often, such a predicate is based
@@ -293,7 +292,7 @@ where each $c_{j}$ is a \emph{candidate hypothesis}.
 Similarly, let $d_{i}=\left\{ c_{1},\ldots,c_{k}\right\} $ be a held-out
 development data example, also consisting of $k$ candidate hypotheses.
 
-Finally, let $K$ be a \emph{kernel function}.
+Finally, let $\mathcal{K}$ be a \emph{kernel function}.
 
 % redefine \ForAll so it comes out as "foreach"
 \renewcommand\algorithmicforall{\textbf{foreach}}
@@ -321,7 +320,7 @@ Finally, let $K$ be a \emph{kernel function}.
 \EndProcedure
 \end{algorithmic}
 
-\caption{\label{alg:basic-perceptron}Training algorithm for perceptron-style
+\caption{\label{alg:basic-perceptron}Training algorithm for online-learning
 reranking models.}
 \end{algorithm}
 
@@ -396,7 +395,7 @@ setting would be to define a concrete implementation of the \texttt{Model}
 interface for each instantiation of the cross product of possible
 variants one wanted to explore. Such an approach quickly becomes unwieldy.
 
-A better approach is to use \emph{dynamic composition. }That is, we
+A more flexible approach is to use \emph{dynamic composition. }That is, we
 keep\emph{ }the idea of a \texttt{Model} interface, but additionally
 have each \texttt{Model} instance wrap a set of predicate/manipulator
 objects, each of which itself conforms to an interface. Figure \ref{fig:pictorial-view-of-model}
@@ -499,7 +498,7 @@ are not much better off than if we had to define a subclass of \texttt{Model}
 for every combination we wanted to explore. Moreover, forcing the
 user to instantiate objects statically does not even begin to address
 the issue of feature function exploration. When we explore different
-features---different ways of defining the $N$ feature functions that
+features---different ways of defining the $F$ feature functions that
 constitute $\Phi$---we would ideally like to specify which ones we
 wish to employ at run-time.
 
@@ -546,13 +545,12 @@ interfaces.
 
 \subsubsection{Dynamic instantiation of complex objects}
 
-Given that C++ is a statically compiled language, how might we specify
-the construction of a complex object at run-time? The answer is that
-we use a simple, interpreted language. To ease the burden on the programmer,
-this language is very similar to the syntax used in the initialization
-phase of C++ constructors. To motivate our choice of syntax for this
-interpreted language, let's look at a simple C++ class called \texttt{Person},
-shown in Figure \ref{fig:cpp-person-example}. 
+Given that C++ is a statically compiled language, we allow the user to specify
+the construction of complex objects at run-time via an interpreted language. To
+ease the burden on the programmer, this language is very similar to the syntax
+used in the initialization phase of C++ constructors. To motivate our choice of
+syntax for this interpreted language, let's look at a simple C++ class called
+\texttt{Person}, shown in Figure \ref{fig:cpp-person-example}. 
 \begin{figure}
 \begin{lyxcode}
 %//~A~class~to~represent~a~date~in~the~standard\\
@@ -839,7 +837,7 @@ devtest\_files = \{\textquotedbl dev1.gz\textquotedbl,
 Another area that should be maximally flexible and yet easy to use
 is the specification of features, that is, the $\Phi$ of Equation
 \ref{eq:perceptron-update}. If one already has features encoded in
-either Roark's or Köhn's format, one may use the tools described in
+either Roark's or K\"{o}hn's format, one may use the tools described in
 \S\ref{sub:protobufs}. That is one of the ways in which one can
 incorporate pre-computed features. Often, it is preferable to define
 many feature functions and choose among them on the fly. The Reranker
@@ -867,7 +865,7 @@ or structured prediction is to read the training data into memory
 and then iterate over it until training is complete. This way of training
 tends to minimize the time spent doing I/O and maximize the efficiency
 of training, but at the expense of memory. As Algorithm \ref{alg:basic-perceptron}
-shows, the basic perceptron algorithm involves ``on-line'' updating,
+shows, the basic perceptron algorithm involves ``online'' updating,
 and thus it is possible to read in each training example from file
 each time it is needed, only keeping the model's parameters persistently
 in memory. The Reranker Framework allows both the memory-intensive
@@ -882,23 +880,23 @@ Learning techniques which are able to exploit unlabeled examples for
 training models often fall under the name semi-supervised learning;
 however, there are additional techniques which make use of unlabeled
 data (e.g., distance supervision\cite{mintz09}). Inducing training
-data from unlabeled text for discriminative modeling (the goal of
-this workshop) is another technique which can result in a relatively
-large set of training data (depending on the technique, this set is
-unbounded). Addressing the issue of huge sets of training data, we
-have developed a distributed training paradigm which can be executed
-on a cluster of compute nodes via the Hadoop MapReduce training framework.
+data from unlabeled text for discriminative modeling is another technique which
+can result in a relatively large set of training data (depending on the
+technique, this set is unbounded). Addressing the issue of huge sets of training
+data, we have developed a distributed training paradigm which can be executed on
+a cluster of compute nodes via the Hadoop MapReduce training framework.
 
 The most direct approach to distributed, supervised learning is to
 split the training data into smaller subsets and process each of these
 subsets on a separate computing node (either multiple nodes on a single
 machine or across multiple machines in a cluster computing environment).
 The differences between distributed learning (and distributed optimization)
-algorithms arise at this point; the primary questions being, \textquotedbl{}what
-do we do on with each subset and how do we train a global model.\textquotedbl{}
-One of the solutions is to simply distribute the data, train multiple
+algorithms arise at this point; the primary questions being,
+ \textquotedbl{}what computation is performed on each subset and how does this
+contribute to a global model.  \textquotedbl{}
+One of the solutions is to distribute the data, train multiple
 independent models and then average their parameters; a technique known
-as parameter mixtures. Another technique is to use a batch training
+as parameter mixtures \cite{gmann2009}. Another technique is to use a batch training
 technique which collects statistics from each of the subsets, make
 an update to a global model and sends that model back to the clusters
 for the next iteration (epoch) of training. This is applied in the
@@ -908,12 +906,11 @@ The structured perceptron \cite{Collins02b} and it's variants have proven to
 be effective in supervised, discriminative language modeling work
 \cite{Roark07}.  We have centered the development of 
 our open-source discriminative learning toolkit around perceptron-style
-algorithms, which are, by definition, on-line learning algorithms. Identifying the
-optimal solution for a distributed on-line optimization algorithm is still an open
+algorithms, which are, by definition, online learning algorithms. Identifying the
+optimal solution for a distributed online optimization algorithm is still an open
 research question. We borrow from our previous work on distributed perceptron
-training in \cite{mcdonald10distributed} and use the \emph{Iterative Parameter
-Mixtures} algorithm for distributed computation.
-
+training in \cite{mcdonald10distributed,hall10distributed} and use the
+\emph{Iterative Parameter Mixtures} algorithm for distributed computation.
 
 \subsection{Iterative Parameter Mixtures}
 \begin{algorithm}[h]
@@ -944,27 +941,26 @@ Mixtures} algorithm for distributed computation.
 
 The iterative parameter mixtures (IPM) perceptron trainer is a distributed
 approximation to the standard perceptron algorithm. The general idea
-is to perform many partial optimizations of subsets of the training
-data followed by a synchronization of the models (partially) trained
-from these subsets.  This process repeats for each epoch of training.
+is to perform many partial optimizations over subsets of the training
+data followed by a synchronization of the updated models form each of
+the partial optimizations.  This process repeats during each epoch of training.
 
 Algorithm~\ref{alg:IPM} shows the IPM perceptron algorithms as presented
 in \cite{mcdonald10distributed}. We split the data into $K$
 partitions: $D^{1}$ through $D^{K}$. Each of these
 partitions is processed independently on separate machines. During each iteration
-of training, each of these machines makes one pass through their partition
-of data, performing the standard structured perceptron up-date to their internal
-model.  After all partitions have been processed, each machine sends it's
+of training, each of these machines makes one pass through its partition
+of data, performing the standard structured perceptron up-date to its internal
+model.  After all partitions have been processed, each machine sends its
 version of the global model to another set of machines responsible for averaging
 the models.  In order to do this later
 merging step, we partition each of the models based on their feature ids (e.g.,
 each of these \emph{merging} machines merges a subset of the feature space).
-Each machine will start its next iteration of training with the globally merged
+Each machine will start its next epoch of training with the globally merged
 model.
 
 There are some subtleties in the IPM algorithm which we have left out
-in this presentation (e.g., details of the parameter averaging). We
-defer to the original publication for full details on these topics.
+in this presentation (e.g., details of the parameter averaging).
 The implementation we are providing with the open source toolkit uses
 an error-weighted average (the contribution of each partitions
 average is weighted by the number of errors made over that partition in the most
@@ -975,10 +971,10 @@ perceptron algorithm.
 \subsection{Hadoop Implementation}
 
 The iterative parameter mixtures algorithm described above is packaged as part
-of the open source toolkit an is primarily coded in python.  Distributed
-computation is handled by way of using the Hadoop MapReduce computing framework.
+of the open source toolkit.  The implementation is based on a Python program
+that interfaces with the Hadoop MapReduce computing framework.
 MapReduce is a general paradigm for distributed computation
-\cite{dean08mapreduce} where computation is broken into two general phases:
+\cite{dean08mapreduce} where computation is broken into two phases:
 mapping and reducing.  Mapping is the process of taking an input dataset,
 splitting it into partitions, and extracting key/value pairs from that data.
 Reducing allows us to take those key/value pairs and process them (where all
@@ -988,18 +984,16 @@ values for a specified key will be in the same reduction partition).
 \centering \label{fig:hadoopipm} \includegraphics[width=1.1\textwidth]{graphics/mapreduceflow} 
 \end{figure*}
 
-The MapReduce framework is well suited for the iterative parameter
-mixtures learning algorithm. Parallel computation for each training-data
-partition is done in a mapping stage, where the model parameter mixing
-is done via a reducing stage. Figure~\ref{fig:hadoopipm} provides
-a general sketch of the mapreduce framework for the iterative parameters
-mixture algorithm we provide as part of the open source toolkit.
+Figure~\ref{fig:hadoopipm} provides a general sketch of the MapReduce framework
+for the iterative parameter mixtures algorithm.
+The MapReduce framework is well suited for IPM: parallel computation for each
+training-data partition is done in a mapping stage; the model parameter mixing
+is done via a reducing stage.
 
 We have designed the training library to interact naturally with the
 MapReduce framework, providing a mechanism for encoding protocol buffers
 into file-formats that can be partitioned by the Hadoop MapReduce
 system.
-
 
 \section{Acknowledgements}
 The authors would like to thank Prof.\ Brian Roark of Oregon Health and
