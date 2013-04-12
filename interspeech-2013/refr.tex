@@ -151,18 +151,15 @@ immediate research problem of exploring confusions for discriminative
 language modeling, but also the more general problem of reranking
 approaches to speech and language processing, including structured
 prediction. We designed ReFr to have the following properites:
+\vspace{-0.1in}
 \begin{itemize}[noitemsep]
 \item ``library quality'' code
 \item industrial strength
 \item academic flexibility
-\item easy exploration of
-  \begin{itemize}[noitemsep]
-    \item different types of features
-    \item different update methods (\emph{e.g.}, MIRA-style, direct
-      loss minimization, loss-sensitive)
-    \item different learning methods (\emph{e.g.}, perceptron-style,
-      log-linear, kernel methods)
-  \end{itemize}
+\item easy exploration of different types of features, different
+  update methods (\emph{e.g.}, MIRA-style, direct loss minimization,
+  loss-sensitive) and different learning methods (\emph{e.g.},
+  perceptron-style, log-linear, kernel methods)
 \item modern, object-oriented design, complete with dynamic factories
   and dynamic composition for flexibility
 \item parallelizable, especially for distributed-computing
@@ -405,11 +402,12 @@ instance \noun{has-a} \texttt{Updater} instance,\texttt{ }and the
 and similarly for other objects with which a \texttt{Model} is composed.
 This mutually recursive relationship is what gives this scheme its
 great flexibility without the complexity associated with creating
-impossibly many implementations of the \texttt{Model} interface. The
-outline of this approach in C++ is shown in Figure \ref{fig:model-with-composition}.
+impossibly many implementations of the \texttt{Model} interface.
+%The outline of this approach in C++ is shown in Figure
+%\ref{fig:model-with-composition}.
 \begin{figure}
 \begin{centering}
-\includegraphics[bb=120bp 400bp 345bp 610bp,clip,scale=0.5]{graphics/model-diagram}
+\includegraphics[bb=120bp 400bp 345bp 610bp,clip,scale=0.35]{graphics/model-diagram}
 \par\end{centering}
 
 \caption{\label{fig:pictorial-view-of-model}A pictorial view of how a \texttt{Model}
@@ -418,71 +416,71 @@ functions needed to carry out model training.}
 \end{figure}
 
 
-\begin{figure}
-\begin{lyxcode}
-class~UpdatePredicate~\{
+%% \begin{figure}
+%% \begin{lyxcode}
+%% class~UpdatePredicate~\{
 
-~public:
+%% ~public:
 
-~~virtual~bool~NeedToUpdate(const~Model~{*}model)~=~0;
+%% ~~virtual~bool~NeedToUpdate(const~Model~{*}model)~=~0;
 
-\};
+%% \};
 
-\
+%% \
 
-class~Updater~\{
+%% class~Updater~\{
 
-~public:
+%% ~public:
 
-~~virtual~void~Update(Model~{*}model)~=~0;
+%% ~~virtual~void~Update(Model~{*}model)~=~0;
 
-\};
+%% \};
 
-\
+%% \
 
-class~CandidateScorer~\{
+%% class~CandidateScorer~\{
 
-~public:
+%% ~public:
 
-~~virtual~void~Score(CandidateSet~\&candidate\_set)~=~0;
+%% ~~virtual~void~Score(CandidateSet~\&candidate\_set)~=~0;
 
-\};
+%% \};
 
-//~...~more~interfaces~to~be~composed~with~Model
+%% //~...~more~interfaces~to~be~composed~with~Model
 
-\
+%% \
 
-class~Model~\{
+%% class~Model~\{
 
-~public:
+%% ~public:
 
-~~virtual~bool~NeedToKeepTraining()~=~0;
+%% ~~virtual~bool~NeedToKeepTraining()~=~0;
 
-~~virtual~void~TrainOneEpoch(...)~=~0;
+%% ~~virtual~void~TrainOneEpoch(...)~=~0;
 
-~~virtual~bool~NeedToUpdate()~=~0;
+%% ~~virtual~bool~NeedToUpdate()~=~0;
 
-~~virtual~void~Update()~=~0;
+%% ~~virtual~void~Update()~=~0;
 
-~~//~...~more~methods~...
+%% ~~//~...~more~methods~...
 
-~private:
+%% ~private:
 
-~~//~data~members
+%% ~~//~data~members
 
-~~Updater~{*}updater\_;
+%% ~~Updater~{*}updater\_;
 
-~~UpdatePredicate~{*}update\_predicate\_;
+%% ~~UpdatePredicate~{*}update\_predicate\_;
 
-~~CandidateScorer~{*}candidate\_scorer\_;
+%% ~~CandidateScorer~{*}candidate\_scorer\_;
 
-~~//~...~more~objects~composed~with~Model
+%% ~~//~...~more~objects~composed~with~Model
 
-\};
-\end{lyxcode}
-\caption{\label{fig:model-with-composition}The \texttt{Model} interface using
-dynamic composition with instances of other interfaces.}
-\end{figure}
+%% \};
+%% \end{lyxcode}
+%% \caption{\label{fig:model-with-composition}The \texttt{Model} interface using
+%% dynamic composition with instances of other interfaces.}
+%% \end{figure}
 
 
 
@@ -508,22 +506,8 @@ such as a \texttt{string}, as a parameter and returns a concrete instance
 of an abstract type, where the concrete type is determined by that
 input parameter. For example, suppose we have our abstract base type
 \texttt{Model} with a concrete implementation called \texttt{PerceptronModel}.
-In C++, we would like to be able to have something like what is shown
-in Figure \ref{fig:dynamic-factory}. 
-\begin{figure}
+In C++, we would like to be able to write code like
 \begin{lyxcode}
-template~<typename~T>
-
-class~Factory~\{
-
-~public:
-
-~~T~{*}Create(const~string~\&type);
-
-\};
-
-\
-
 //~elsewhere,~perhaps~in~our~main~method
 
 Factory<Model>~model\_factory;
@@ -534,9 +518,7 @@ Model~{*}perceptron\_model~=
 
 //...
 \end{lyxcode}
-\caption{\label{fig:dynamic-factory}Dynamic factories in C++.}
-\end{figure}
- Having such \texttt{Factory} instances for dynamic object instantiation
+Having such \texttt{Factory} instances for dynamic object instantiation
 goes a long way toward making the system easy and flexible, but we
 would ideally like to specify how to construct entire complex objects,
 such as the \texttt{Model} that contains concrete instances of other
@@ -566,11 +548,7 @@ syntax for this interpreted language, let's look at a simple C++ class called
 
 ~~private:
 
-~~~~int~year\_;
-
-~~~~int~month\_;
-
-~~~~int~day\_;
+~~~~int~year\_;~int~month\_;~int~day\_;
 
 ~\};
 
@@ -593,14 +571,11 @@ syntax for this interpreted language, let's look at a simple C++ class called
 
 ~~private:
 
-~~~string~name\_;
-
-~~~int~cm\_height\_;
-
-~~~Date~birthday\_;
+~~~string~name\_;~int~cm\_height\_;~Date~birthday\_;
 
 ~\};
 \end{lyxcode}
+\vspace{-0.2in}
 \caption{\label{fig:cpp-person-example}A simple C++ example to motivate our
 interpreted language syntax.}
 \end{figure}
@@ -633,17 +608,17 @@ to a first approximation, a combination of the parameter list and
 the initialization phase of a C++ constructor.
 
 
-\subsubsection{Interpreted language details}
+%% \subsubsection{Interpreted language details}
 
-Unfortunately, we cannot get this kind of dynamic instantiation in
-C++ for free; we need some help from the programmer. However, we have
-tried to make the burden on the programmer fairly low, using just
-a handful of macros to help declare a \texttt{Factory} for an abstract
-base class, as well as to make it easy to make that \texttt{Factory}
-aware of the concrete subtypes of that base class that it can construct.
-Finally, each \texttt{Factory}-constructible abstract type needs to
-implement a single method called \texttt{RegisterInitializers} to
-specify the names of its data members that this language can initialize.
+%% Unfortunately, we cannot get this kind of dynamic instantiation in
+%% C++ for free; we need some help from the programmer. However, we have
+%% tried to make the burden on the programmer fairly low, using just
+%% a handful of macros to help declare a \texttt{Factory} for an abstract
+%% base class, as well as to make it easy to make that \texttt{Factory}
+%% aware of the concrete subtypes of that base class that it can construct.
+%% Finally, each \texttt{Factory}-constructible abstract type needs to
+%% implement a single method called \texttt{RegisterInitializers} to
+%% specify the names of its data members that this language can initialize.
 
 % Instead of presenting the reader with an inscrutable BNF of the
 % grammar, show an example of the interpreter config file.
@@ -679,6 +654,16 @@ specify the names of its data members that this language can initialize.
 
 \subsubsection{Putting it all together}
 
+While C++ does not allow dyanamic object instantiation ``for free'',
+we have kept the burden on the programmer very low, with macros that
+make it easy to declare a \texttt{Factory} for an abstract base class,
+as well as macros to make it easy to declare concrete implementations
+that should be \texttt{Factory}-constructible.  Also, each
+\texttt{Factory}-constructible abstract type needs to implement a
+single method called \texttt{RegisterInitializers} to specify the
+names of its data members that this language can initialize.
+
+
 The Reranker Framework contains an extremely portable, lightweight
 interpreter of assignment statements in this C++-like language.  The
 general form of each assignment statement read by the interpreter is:
@@ -694,46 +679,29 @@ that all have the same abstract type.  Arrays are expressed identically to array
 
 \begin{figure}
 \begin{lyxcode}
-// Specify the model output file.\\
-model\_file = \textquotedbl my\_model\_file\textquotedbl;
+\scriptsize
+model\_file = \textquotedbl my\_model\_file\textquotedbl;  // model output file
 
-\
-
-// Construct a Model instance of run-time type\\
-// PerceptronModel, specifying a score comparator\\
-// object.\\
 model =\\
 ~~PerceptronModel(\\
 ~~~~name(\textquotedbl my model\textquotedbl),\\
 ~~~~score\_comparator(DirectLossScoreComparator()));
 
-\
-
-// Do run-time feature extraction using an\\
-// \textquotedbl executive feature extractor\textquotedbl~which\\
-// invokes the ExtractFeatures method from an\\
-// internal vector of FeatureExtractor instances.\\
 exec\_feature\_extractor =\\
 ~~ExecutiveFeatureExtractorImpl(\\
 ~~~~feature\_extractors(\{NgramFeatureExtractor(n(2)),\\
 ~~~~~~~~~~~~~~~~~~~~~~~~RankFeatureExtractor()\});
 
-\
-
-// Specify to use the above set of feature\\
-// extractors for both training and dev datasets.\\
 training\_efe = exec\_feature\_extractor;\\
 dev\_efe = exec\_feature\_extractor;
 
-\
-
-// Specify the training and devtest files.\\
 training\_files = \{\textquotedbl training1.gz\textquotedbl,
 \textquotedbl training2.gz\textquotedbl\};\\
 devtest\_files = \{\textquotedbl dev1.gz\textquotedbl,
 \textquotedbl dev2.gz\textquotedbl\};
-
+\normalsize
 \end{lyxcode}
+\vspace{-0.2in}
 \caption{\label{fig:interpreter-config}An example ReFr configuration file, read by its \inlinecode{Interpreter} class.}
 \end{figure}
 
@@ -914,6 +882,7 @@ training in \cite{mcdonald10distributed,hall10distributed} and use the
 
 \subsection{Iterative Parameter Mixtures}
 \begin{algorithm}[h]
+\scriptsize
 \caption{Iterative Parameter Mixtures Perceptron}
 \label{alg:IPM}
 \begin{algorithmic}
@@ -937,6 +906,7 @@ training in \cite{mcdonald10distributed,hall10distributed} and use the
     \EndFor
   \Until{converged}
    \end{algorithmic} 
+\normalsize
 \end{algorithm}
 
 The iterative parameter mixtures (IPM) perceptron trainer is a distributed
