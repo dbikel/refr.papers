@@ -939,6 +939,10 @@ converge (in number of epochs over the training data) than that standard
 perceptron algorithm.
 
 \subsection{Hadoop Implementation}
+\begin{figure}[th]
+\centering \includegraphics[width=.5\textwidth]{graphics/mapreduceflow} 
+\caption{\label{fig:hadoopipm}Flow of Iterative Parameter Mixtures algorithm implemented in {ReFr}.}
+\end{figure}
 
 The iterative parameter mixtures algorithm described above is packaged as part
 of the open source toolkit.  The implementation is based on a Python program
@@ -949,10 +953,6 @@ mapping and reducing.  Mapping is the process of taking an input dataset,
 splitting it into partitions, and extracting key/value pairs from that data.
 Reducing allows us to take those key/value pairs and process them (where all
 values for a specified key will be in the same reduction partition).
-
-\begin{figure*}[h]
-\centering \label{fig:hadoopipm} \includegraphics[width=1.1\textwidth]{graphics/mapreduceflow} 
-\end{figure*}
 
 Figure~\ref{fig:hadoopipm} provides a general sketch of the MapReduce framework
 for the iterative parameter mixtures algorithm.
