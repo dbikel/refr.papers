@@ -151,18 +151,15 @@ immediate research problem of exploring confusions for discriminative
 language modeling, but also the more general problem of reranking
 approaches to speech and language processing, including structured
 prediction. We designed ReFr to have the following properites:
+\vspace{-0.1in}
 \begin{itemize}[noitemsep]
 \item ``library quality'' code
 \item industrial strength
 \item academic flexibility
-\item easy exploration of
-  \begin{itemize}[noitemsep]
-    \item different types of features
-    \item different update methods (\emph{e.g.}, MIRA-style, direct
-      loss minimization, loss-sensitive)
-    \item different learning methods (\emph{e.g.}, perceptron-style,
-      log-linear, kernel methods)
-  \end{itemize}
+\item easy exploration of different types of features, different
+  update methods (\emph{e.g.}, MIRA-style, direct loss minimization,
+  loss-sensitive) and different learning methods (\emph{e.g.},
+  perceptron-style, log-linear, kernel methods)
 \item modern, object-oriented design, complete with dynamic factories
   and dynamic composition for flexibility
 \item parallelizable, especially for distributed-computing
@@ -173,14 +170,13 @@ prediction. We designed ReFr to have the following properites:
 There are two main choices when building discriminative reranking
 models for speech or machine translation: (a) rescore a lattice or
 hypergraph or (b) simply use a strict reranking approach applied to
-k-best lists. For ReFr, early on we decided to use (b) reranking
-k-best lists. The primary reasons were the flexibility this would
-allow us in designing features, since k-best lists readily allow for
-sentence-level features in a way that, say, lattices do not, as well
-as the flexibility in designing tools, since it is far easier to
-define generic schemes of passing around k-best lists than it is for
-designing schemes to take speech lattices as well as machine
-translation hypergraphs or other, problem-specific data types.
+n-best lists. For ReFr, early on we decided to use (b) reranking
+n-best lists. The primary reasons were the flexibility this would
+allow us in designing features and tools. N-best lists readily allow for
+sentence-level features in a way that, say, lattices do not.
+Additionally, it is far easier to define generic schemes of passing around
+n-best lists than it is for designing schemes to take speech lattices as well
+as machine translation hypergraphs or other, problem-specific data types.
 
 
 \subsection{\label{sub:protobufs}Google Protocol Buffers}
@@ -189,7 +185,7 @@ Supervised machine learning is based on the supply of labeled (supervised)
 examples from which a model is trained.  A training algorithm is used to induce
 the model which best explains the supervised data, while at the same time being
 robust to data not seen in the supervised dataset (what is referred to as
-regularization of a model).  The general paradigm is true for all supervised
+the generalization of a model).  The general paradigm is true for all supervised
 training algorithms and is also true in the discriminative training algorithms
 we use for our experiments in this project. Although not critical when building
 a small system which expects relatively little variation in the input data, the
@@ -222,7 +218,7 @@ for access to the data.\footnote{For the 2011 Johns Hopkins Workshop, we were ta
 %% \item [{FST}] input (Roark's format)
 %% \begin{verbatim} ./lm-confusion/dataconvert/asrnbestproto
 %% \end{verbatim} 
-%% \item [{SMT}] input (Köhn's format)
+%% \item [{SMT}] input (K\"{o}hn's format)
 %% \begin{verbatim} ./lm-confusion/dataconvert/mtnbestproto
 %% \end{verbatim} 
 %% \end{description}
@@ -263,22 +259,22 @@ used by the training and inference tools.  The protocol buffer specifications is
 delivered with the toolkit (one for the model format and one for the data
 format).
 \begin{verbatim}
-./lm-confusion/proto/model.proto
-./lm-confusion/proto/data.proto
+./refr/src/proto/model.proto
+./refr/src/proto/data.proto
 \end{verbatim}
 
 
 \section{Core learning framework}
 
 Consider Algorithm \ref{alg:basic-perceptron}, which describes the
-training procedure for a generic perceptron-style algorithm. Each
+training procedure for a generic online-learning algorithm. Each
 training example $e_{i}$ comprises a set of \emph{candidate hypotheses},
 each of which is projected via some function $\Phi$ into a \emph{feature
-space}, $\mathbb{R}^{N}$. We typically think of $\Phi$ as being
+space}, $\mathbb{R}^{F}$. We typically think of $\Phi$ as being
 a suite of \emph{feature functions}, one per dimension.\emph{ }The\emph{
 }model itself is defined as a weight vector in this space, $w$. Decoding,
 or inference, is carried out simply by taking the dot product of the
-model and a test instance. More generally, any kernel function $K$
+model and a test instance. More generally, any kernel function $\mathcal{K}$
 may be used. The training procedure iterates over the training data
 $T$---each iteration is called an \emph{epoch}---until the $\Call{NeedToKeepTraining}{}()$
 predicate returns \texttt{false}. Often, such a predicate is based
@@ -293,7 +289,7 @@ where each $c_{j}$ is a \emph{candidate hypothesis}.
 Similarly, let $d_{i}=\left\{ c_{1},\ldots,c_{k}\right\} $ be a held-out
 development data example, also consisting of $k$ candidate hypotheses.
 
-Finally, let $K$ be a \emph{kernel function}.
+Finally, let $\mathcal{K}$ be a \emph{kernel function}.
 
 % redefine \ForAll so it comes out as "foreach"
 \renewcommand\algorithmicforall{\textbf{foreach}}
@@ -321,7 +317,7 @@ Finally, let $K$ be a \emph{kernel function}.
 \EndProcedure
 \end{algorithmic}
 
-\caption{\label{alg:basic-perceptron}Training algorithm for perceptron-style
+\caption{\label{alg:basic-perceptron}Training algorithm for online-learning
 reranking models.}
 \end{algorithm}
 
@@ -396,7 +392,7 @@ setting would be to define a concrete implementation of the \texttt{Model}
 interface for each instantiation of the cross product of possible
 variants one wanted to explore. Such an approach quickly becomes unwieldy.
 
-A better approach is to use \emph{dynamic composition. }That is, we
+A more flexible approach is to use \emph{dynamic composition. }That is, we
 keep\emph{ }the idea of a \texttt{Model} interface, but additionally
 have each \texttt{Model} instance wrap a set of predicate/manipulator
 objects, each of which itself conforms to an interface. Figure \ref{fig:pictorial-view-of-model}
@@ -406,11 +402,12 @@ instance \noun{has-a} \texttt{Updater} instance,\texttt{ }and the
 and similarly for other objects with which a \texttt{Model} is composed.
 This mutually recursive relationship is what gives this scheme its
 great flexibility without the complexity associated with creating
-impossibly many implementations of the \texttt{Model} interface. The
-outline of this approach in C++ is shown in Figure \ref{fig:model-with-composition}.
+impossibly many implementations of the \texttt{Model} interface.
+%The outline of this approach in C++ is shown in Figure
+%\ref{fig:model-with-composition}.
 \begin{figure}
 \begin{centering}
-\includegraphics[bb=120bp 400bp 345bp 610bp,clip,scale=0.5]{graphics/model-diagram}
+\includegraphics[bb=120bp 400bp 345bp 610bp,clip,scale=0.35]{graphics/model-diagram}
 \par\end{centering}
 
 \caption{\label{fig:pictorial-view-of-model}A pictorial view of how a \texttt{Model}
@@ -419,71 +416,71 @@ functions needed to carry out model training.}
 \end{figure}
 
 
-\begin{figure}
-\begin{lyxcode}
-class~UpdatePredicate~\{
+%% \begin{figure}
+%% \begin{lyxcode}
+%% class~UpdatePredicate~\{
 
-~public:
+%% ~public:
 
-~~virtual~bool~NeedToUpdate(const~Model~{*}model)~=~0;
+%% ~~virtual~bool~NeedToUpdate(const~Model~{*}model)~=~0;
 
-\};
+%% \};
 
-\
+%% \
 
-class~Updater~\{
+%% class~Updater~\{
 
-~public:
+%% ~public:
 
-~~virtual~void~Update(Model~{*}model)~=~0;
+%% ~~virtual~void~Update(Model~{*}model)~=~0;
 
-\};
+%% \};
 
-\
+%% \
 
-class~CandidateScorer~\{
+%% class~CandidateScorer~\{
 
-~public:
+%% ~public:
 
-~~virtual~void~Score(CandidateSet~\&candidate\_set)~=~0;
+%% ~~virtual~void~Score(CandidateSet~\&candidate\_set)~=~0;
 
-\};
+%% \};
 
-//~...~more~interfaces~to~be~composed~with~Model
+%% //~...~more~interfaces~to~be~composed~with~Model
 
-\
+%% \
 
-class~Model~\{
+%% class~Model~\{
 
-~public:
+%% ~public:
 
-~~virtual~bool~NeedToKeepTraining()~=~0;
+%% ~~virtual~bool~NeedToKeepTraining()~=~0;
 
-~~virtual~void~TrainOneEpoch(...)~=~0;
+%% ~~virtual~void~TrainOneEpoch(...)~=~0;
 
-~~virtual~bool~NeedToUpdate()~=~0;
+%% ~~virtual~bool~NeedToUpdate()~=~0;
 
-~~virtual~void~Update()~=~0;
+%% ~~virtual~void~Update()~=~0;
 
-~~//~...~more~methods~...
+%% ~~//~...~more~methods~...
 
-~private:
+%% ~private:
 
-~~//~data~members
+%% ~~//~data~members
 
-~~Updater~{*}updater\_;
+%% ~~Updater~{*}updater\_;
 
-~~UpdatePredicate~{*}update\_predicate\_;
+%% ~~UpdatePredicate~{*}update\_predicate\_;
 
-~~CandidateScorer~{*}candidate\_scorer\_;
+%% ~~CandidateScorer~{*}candidate\_scorer\_;
 
-~~//~...~more~objects~composed~with~Model
+%% ~~//~...~more~objects~composed~with~Model
 
-\};
-\end{lyxcode}
-\caption{\label{fig:model-with-composition}The \texttt{Model} interface using
-dynamic composition with instances of other interfaces.}
-\end{figure}
+%% \};
+%% \end{lyxcode}
+%% \caption{\label{fig:model-with-composition}The \texttt{Model} interface using
+%% dynamic composition with instances of other interfaces.}
+%% \end{figure}
 
 
 
@@ -499,7 +496,7 @@ are not much better off than if we had to define a subclass of \texttt{Model}
 for every combination we wanted to explore. Moreover, forcing the
 user to instantiate objects statically does not even begin to address
 the issue of feature function exploration. When we explore different
-features---different ways of defining the $N$ feature functions that
+features---different ways of defining the $F$ feature functions that
 constitute $\Phi$---we would ideally like to specify which ones we
 wish to employ at run-time.
 
@@ -509,22 +506,8 @@ such as a \texttt{string}, as a parameter and returns a concrete instance
 of an abstract type, where the concrete type is determined by that
 input parameter. For example, suppose we have our abstract base type
 \texttt{Model} with a concrete implementation called \texttt{PerceptronModel}.
-In C++, we would like to be able to have something like what is shown
-in Figure \ref{fig:dynamic-factory}. 
-\begin{figure}
+In C++, we would like to be able to write code like
 \begin{lyxcode}
-template~<typename~T>
-
-class~Factory~\{
-
-~public:
-
-~~T~{*}Create(const~string~\&type);
-
-\};
-
-\
-
 //~elsewhere,~perhaps~in~our~main~method
 
 Factory<Model>~model\_factory;
@@ -535,9 +518,7 @@ Model~{*}perceptron\_model~=
 
 //...
 \end{lyxcode}
-\caption{\label{fig:dynamic-factory}Dynamic factories in C++.}
-\end{figure}
- Having such \texttt{Factory} instances for dynamic object instantiation
+Having such \texttt{Factory} instances for dynamic object instantiation
 goes a long way toward making the system easy and flexible, but we
 would ideally like to specify how to construct entire complex objects,
 such as the \texttt{Model} that contains concrete instances of other
@@ -546,13 +527,12 @@ interfaces.
 
 \subsubsection{Dynamic instantiation of complex objects}
 
-Given that C++ is a statically compiled language, how might we specify
-the construction of a complex object at run-time? The answer is that
-we use a simple, interpreted language. To ease the burden on the programmer,
-this language is very similar to the syntax used in the initialization
-phase of C++ constructors. To motivate our choice of syntax for this
-interpreted language, let's look at a simple C++ class called \texttt{Person},
-shown in Figure \ref{fig:cpp-person-example}. 
+Given that C++ is a statically compiled language, we allow the user to specify
+the construction of complex objects at run-time via an interpreted language. To
+ease the burden on the programmer, this language is very similar to the syntax
+used in the initialization phase of C++ constructors. To motivate our choice of
+syntax for this interpreted language, let's look at a simple C++ class called
+\texttt{Person}, shown in Figure \ref{fig:cpp-person-example}. 
 \begin{figure}
 \begin{lyxcode}
 %//~A~class~to~represent~a~date~in~the~standard\\
@@ -568,11 +548,7 @@ shown in Figure \ref{fig:cpp-person-example}.
 
 ~~private:
 
-~~~~int~year\_;
-
-~~~~int~month\_;
-
-~~~~int~day\_;
+~~~~int~year\_;~int~month\_;~int~day\_;
 
 ~\};
 
@@ -595,14 +571,11 @@ shown in Figure \ref{fig:cpp-person-example}.
 
 ~~private:
 
-~~~string~name\_;
-
-~~~int~cm\_height\_;
-
-~~~Date~birthday\_;
+~~~string~name\_;~int~cm\_height\_;~Date~birthday\_;
 
 ~\};
 \end{lyxcode}
+\vspace{-0.2in}
 \caption{\label{fig:cpp-person-example}A simple C++ example to motivate our
 interpreted language syntax.}
 \end{figure}
@@ -635,17 +608,17 @@ to a first approximation, a combination of the parameter list and
 the initialization phase of a C++ constructor.
 
 
-\subsubsection{Interpreted language details}
+%% \subsubsection{Interpreted language details}
 
-Unfortunately, we cannot get this kind of dynamic instantiation in
-C++ for free; we need some help from the programmer. However, we have
-tried to make the burden on the programmer fairly low, using just
-a handful of macros to help declare a \texttt{Factory} for an abstract
-base class, as well as to make it easy to make that \texttt{Factory}
-aware of the concrete subtypes of that base class that it can construct.
-Finally, each \texttt{Factory}-constructible abstract type needs to
-implement a single method called \texttt{RegisterInitializers} to
-specify the names of its data members that this language can initialize.
+%% Unfortunately, we cannot get this kind of dynamic instantiation in
+%% C++ for free; we need some help from the programmer. However, we have
+%% tried to make the burden on the programmer fairly low, using just
+%% a handful of macros to help declare a \texttt{Factory} for an abstract
+%% base class, as well as to make it easy to make that \texttt{Factory}
+%% aware of the concrete subtypes of that base class that it can construct.
+%% Finally, each \texttt{Factory}-constructible abstract type needs to
+%% implement a single method called \texttt{RegisterInitializers} to
+%% specify the names of its data members that this language can initialize.
 
 % Instead of presenting the reader with an inscrutable BNF of the
 % grammar, show an example of the interpreter config file.
@@ -681,6 +654,16 @@ specify the names of its data members that this language can initialize.
 
 \subsubsection{Putting it all together}
 
+While C++ does not allow dyanamic object instantiation ``for free'',
+we have kept the burden on the programmer very low, with macros that
+make it easy to declare a \texttt{Factory} for an abstract base class,
+as well as macros to make it easy to declare concrete implementations
+that should be \texttt{Factory}-constructible.  Also, each
+\texttt{Factory}-constructible abstract type needs to implement a
+single method called \texttt{RegisterInitializers} to specify the
+names of its data members that this language can initialize.
+
+
 The Reranker Framework contains an extremely portable, lightweight
 interpreter of assignment statements in this C++-like language.  The
 general form of each assignment statement read by the interpreter is:
@@ -696,46 +679,29 @@ that all have the same abstract type.  Arrays are expressed identically to array
 
 \begin{figure}
 \begin{lyxcode}
-// Specify the model output file.\\
-model\_file = \textquotedbl my\_model\_file\textquotedbl;
+\scriptsize
+model\_file = \textquotedbl my\_model\_file\textquotedbl;  // model output file
 
-\
-
-// Construct a Model instance of run-time type\\
-// PerceptronModel, specifying a score comparator\\
-// object.\\
 model =\\
 ~~PerceptronModel(\\
 ~~~~name(\textquotedbl my model\textquotedbl),\\
 ~~~~score\_comparator(DirectLossScoreComparator()));
 
-\
-
-// Do run-time feature extraction using an\\
-// \textquotedbl executive feature extractor\textquotedbl~which\\
-// invokes the ExtractFeatures method from an\\
-// internal vector of FeatureExtractor instances.\\
 exec\_feature\_extractor =\\
 ~~ExecutiveFeatureExtractorImpl(\\
 ~~~~feature\_extractors(\{NgramFeatureExtractor(n(2)),\\
 ~~~~~~~~~~~~~~~~~~~~~~~~RankFeatureExtractor()\});
 
-\
-
-// Specify to use the above set of feature\\
-// extractors for both training and dev datasets.\\
 training\_efe = exec\_feature\_extractor;\\
 dev\_efe = exec\_feature\_extractor;
 
-\
-
-// Specify the training and devtest files.\\
 training\_files = \{\textquotedbl training1.gz\textquotedbl,
 \textquotedbl training2.gz\textquotedbl\};\\
 devtest\_files = \{\textquotedbl dev1.gz\textquotedbl,
 \textquotedbl dev2.gz\textquotedbl\};
-
+\normalsize
 \end{lyxcode}
+\vspace{-0.2in}
 \caption{\label{fig:interpreter-config}An example ReFr configuration file, read by its \inlinecode{Interpreter} class.}
 \end{figure}
 
@@ -839,7 +805,7 @@ devtest\_files = \{\textquotedbl dev1.gz\textquotedbl,
 Another area that should be maximally flexible and yet easy to use
 is the specification of features, that is, the $\Phi$ of Equation
 \ref{eq:perceptron-update}. If one already has features encoded in
-either Roark's or Köhn's format, one may use the tools described in
+either Roark's or K\"{o}hn's format, one may use the tools described in
 \S\ref{sub:protobufs}. That is one of the ways in which one can
 incorporate pre-computed features. Often, it is preferable to define
 many feature functions and choose among them on the fly. The Reranker
@@ -867,7 +833,7 @@ or structured prediction is to read the training data into memory
 and then iterate over it until training is complete. This way of training
 tends to minimize the time spent doing I/O and maximize the efficiency
 of training, but at the expense of memory. As Algorithm \ref{alg:basic-perceptron}
-shows, the basic perceptron algorithm involves ``on-line'' updating,
+shows, the basic perceptron algorithm involves ``online'' updating,
 and thus it is possible to read in each training example from file
 each time it is needed, only keeping the model's parameters persistently
 in memory. The Reranker Framework allows both the memory-intensive
@@ -882,23 +848,23 @@ Learning techniques which are able to exploit unlabeled examples for
 training models often fall under the name semi-supervised learning;
 however, there are additional techniques which make use of unlabeled
 data (e.g., distance supervision\cite{mintz09}). Inducing training
-data from unlabeled text for discriminative modeling (the goal of
-this workshop) is another technique which can result in a relatively
-large set of training data (depending on the technique, this set is
-unbounded). Addressing the issue of huge sets of training data, we
-have developed a distributed training paradigm which can be executed
-on a cluster of compute nodes via the Hadoop MapReduce training framework.
+data from unlabeled text for discriminative modeling is another technique which
+can result in a relatively large set of training data (depending on the
+technique, this set is unbounded). Addressing the issue of huge sets of training
+data, we have developed a distributed training paradigm which can be executed on
+a cluster of compute nodes via the Hadoop MapReduce training framework.
 
 The most direct approach to distributed, supervised learning is to
 split the training data into smaller subsets and process each of these
 subsets on a separate computing node (either multiple nodes on a single
 machine or across multiple machines in a cluster computing environment).
 The differences between distributed learning (and distributed optimization)
-algorithms arise at this point; the primary questions being, \textquotedbl{}what
-do we do on with each subset and how do we train a global model.\textquotedbl{}
-One of the solutions is to simply distribute the data, train multiple
+algorithms arise at this point; the primary questions being,
+ \textquotedbl{}what computation is performed on each subset and how does this
+contribute to a global model.  \textquotedbl{}
+One of the solutions is to distribute the data, train multiple
 independent models and then average their parameters; a technique known
-as parameter mixtures. Another technique is to use a batch training
+as parameter mixtures \cite{gmann2009}. Another technique is to use a batch training
 technique which collects statistics from each of the subsets, make
 an update to a global model and sends that model back to the clusters
 for the next iteration (epoch) of training. This is applied in the
@@ -908,15 +874,15 @@ The structured perceptron \cite{Collins02b} and it's variants have proven to
 be effective in supervised, discriminative language modeling work
 \cite{Roark07}.  We have centered the development of 
 our open-source discriminative learning toolkit around perceptron-style
-algorithms, which are, by definition, on-line learning algorithms. Identifying the
-optimal solution for a distributed on-line optimization algorithm is still an open
+algorithms, which are, by definition, online learning algorithms. Identifying the
+optimal solution for a distributed online optimization algorithm is still an open
 research question. We borrow from our previous work on distributed perceptron
-training in \cite{mcdonald10distributed} and use the \emph{Iterative Parameter
-Mixtures} algorithm for distributed computation.
-
+training in \cite{mcdonald10distributed,hall10distributed} and use the
+\emph{Iterative Parameter Mixtures} algorithm for distributed computation.
 
 \subsection{Iterative Parameter Mixtures}
 \begin{algorithm}[h]
+\scriptsize
 \caption{Iterative Parameter Mixtures Perceptron}
 \label{alg:IPM}
 \begin{algorithmic}
@@ -940,31 +906,31 @@ Mixtures} algorithm for distributed computation.
     \EndFor
   \Until{converged}
    \end{algorithmic} 
+\normalsize
 \end{algorithm}
 
 The iterative parameter mixtures (IPM) perceptron trainer is a distributed
 approximation to the standard perceptron algorithm. The general idea
-is to perform many partial optimizations of subsets of the training
-data followed by a synchronization of the models (partially) trained
-from these subsets.  This process repeats for each epoch of training.
+is to perform many partial optimizations over subsets of the training
+data followed by a synchronization of the updated models form each of
+the partial optimizations.  This process repeats during each epoch of training.
 
 Algorithm~\ref{alg:IPM} shows the IPM perceptron algorithms as presented
 in \cite{mcdonald10distributed}. We split the data into $K$
 partitions: $D^{1}$ through $D^{K}$. Each of these
 partitions is processed independently on separate machines. During each iteration
-of training, each of these machines makes one pass through their partition
-of data, performing the standard structured perceptron up-date to their internal
-model.  After all partitions have been processed, each machine sends it's
+of training, each of these machines makes one pass through its partition
+of data, performing the standard structured perceptron up-date to its internal
+model.  After all partitions have been processed, each machine sends its
 version of the global model to another set of machines responsible for averaging
 the models.  In order to do this later
 merging step, we partition each of the models based on their feature ids (e.g.,
 each of these \emph{merging} machines merges a subset of the feature space).
-Each machine will start its next iteration of training with the globally merged
+Each machine will start its next epoch of training with the globally merged
 model.
 
 There are some subtleties in the IPM algorithm which we have left out
-in this presentation (e.g., details of the parameter averaging). We
-defer to the original publication for full details on these topics.
+in this presentation (e.g., details of the parameter averaging).
 The implementation we are providing with the open source toolkit uses
 an error-weighted average (the contribution of each partitions
 average is weighted by the number of errors made over that partition in the most
@@ -973,33 +939,31 @@ converge (in number of epochs over the training data) than that standard
 perceptron algorithm.
 
 \subsection{Hadoop Implementation}
+\begin{figure}[th]
+\centering \includegraphics[width=.5\textwidth]{graphics/mapreduceflow} 
+\caption{\label{fig:hadoopipm}Flow of Iterative Parameter Mixtures algorithm implemented in {ReFr}.}
+\end{figure}
 
 The iterative parameter mixtures algorithm described above is packaged as part
-of the open source toolkit an is primarily coded in python.  Distributed
-computation is handled by way of using the Hadoop MapReduce computing framework.
+of the open source toolkit.  The implementation is based on a Python program
+that interfaces with the Hadoop MapReduce computing framework.
 MapReduce is a general paradigm for distributed computation
-\cite{dean08mapreduce} where computation is broken into two general phases:
+\cite{dean08mapreduce} where computation is broken into two phases:
 mapping and reducing.  Mapping is the process of taking an input dataset,
 splitting it into partitions, and extracting key/value pairs from that data.
 Reducing allows us to take those key/value pairs and process them (where all
 values for a specified key will be in the same reduction partition).
 
-\begin{figure*}[h]
-\centering \label{fig:hadoopipm} \includegraphics[width=1.1\textwidth]{graphics/mapreduceflow} 
-\end{figure*}
-
-The MapReduce framework is well suited for the iterative parameter
-mixtures learning algorithm. Parallel computation for each training-data
-partition is done in a mapping stage, where the model parameter mixing
-is done via a reducing stage. Figure~\ref{fig:hadoopipm} provides
-a general sketch of the mapreduce framework for the iterative parameters
-mixture algorithm we provide as part of the open source toolkit.
+Figure~\ref{fig:hadoopipm} provides a general sketch of the MapReduce framework
+for the iterative parameter mixtures algorithm.
+The MapReduce framework is well suited for IPM: parallel computation for each
+training-data partition is done in a mapping stage; the model parameter mixing
+is done via a reducing stage.
 
 We have designed the training library to interact naturally with the
 MapReduce framework, providing a mechanism for encoding protocol buffers
 into file-formats that can be partitioned by the Hadoop MapReduce
 system.
-
 
 \section{Acknowledgements}
 The authors would like to thank Prof.\ Brian Roark of Oregon Health and
