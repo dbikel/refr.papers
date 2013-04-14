@@ -653,13 +653,7 @@ that should be \texttt{Factory}-constructible.
 
 
 The Reranker Framework contains an extremely portable, lightweight
-interpreter of assignment statements in this C++-like language.  The
-general form of each assignment statement read by the interpreter is:
-\begin{lyxcode}
-<variable\_name> = <object>;
-\end{lyxcode}
-\normalsize
-where \inlinecode{<object>} is either a C++ primitive literal, a
+interpreter of assignment statements in this C++-like language, where each right-hand side value is either a C++ primitive literal, a
 Factory-constructible type or an array of primitives or Factory-constructible objects of the same run-time type. Figure \ref{fig:interpreter-config} shows an example of a ReFr configuration file.
 
 
