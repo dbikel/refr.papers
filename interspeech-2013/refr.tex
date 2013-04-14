@@ -528,9 +528,8 @@ Given that C++ is a statically compiled language, we allow the user to specify
 the construction of complex objects at run-time via an interpreted language. To
 ease the burden on the programmer, this language is very similar to the syntax
 used in the initialization phase of C++ constructors. To motivate our choice of
-syntax for this interpreted language, let's look at a simple C++ class called
-\texttt{Person}, shown in Figure \ref{fig:cpp-person-example}. 
-\begin{figure}
+syntax for this interpreted language, let's look at a simple pair of C++ classes, \texttt{Date} and \texttt{Person}:
+%\begin{figure}
 \begin{lyxcode}
 %//~A~class~to~represent~a~date~in~the~standard\\
 %//~Gregorian~calendar.
@@ -568,10 +567,10 @@ syntax for this interpreted language, let's look at a simple C++ class called
 
 ~\};
 \end{lyxcode}
-\vspace{-0.2in}
-\caption{\label{fig:cpp-person-example}A simple C++ example to motivate our
-interpreted language syntax.}
-\end{figure}
+%\vspace{-0.2in}
+%\caption{\label{fig:cpp-person-example}A simple C++ example to motivate our
+%interpreted language syntax.}
+%\end{figure}
 
 
 As you can see, all of the initialization of a \texttt{Person} happens
