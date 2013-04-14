@@ -294,6 +294,7 @@ Finally, let $\mathcal{K}$ be a \emph{kernel function}.
 % redefine \ForAll so it comes out as "foreach"
 \renewcommand\algorithmicforall{\textbf{foreach}}
 \begin{algorithmic}
+\scriptsize
 \Procedure{Train}{$T = \{e_1, \ldots, e_n\}, D = \{d_1,\ldots,d_m\}$}
   \While{\Call{NeedToKeepTraining}{}()}
     \State \Call{TrainOneEpoch}{$T$}
@@ -315,6 +316,7 @@ Finally, let $\mathcal{K}$ be a \emph{kernel function}.
     \State $c_j.\texttt{score} \leftarrow K(w_t, c_j)$
   \EndFor
 \EndProcedure
+\normalsize
 \end{algorithmic}
 
 \caption{\label{alg:basic-perceptron}Training algorithm for online-learning
@@ -378,7 +380,6 @@ class~Model~\{
 \};
 \end{lyxcode}
 \normalsize
-\vspace{-0.2in}
 
 This works well for flexibility, but consider the case where the researcher
 wants to experiment with the various, largely orthogonal definitions
@@ -796,19 +797,13 @@ either Roark's or K\"{o}hn's format, one may use the tools described in
 incorporate pre-computed features. Often, it is preferable to define
 many feature functions and choose among them on the fly. The Reranker
 Framework makes this easy, once again using the interpreted language
-for specifying which feature extractors to use, as demonstrated by
-the \texttt{NgramFeatureExtractor} example of the previous section.
-For even more flexibility, one might want to combine features that
+for specifying which feature extractors to use.
+For even more flexibility, ReFr allows the combining of features that
 are extracted on the fly with different sets of features that have
-been precomputed but are sitting in separate files on disk. This scenario,
-too, is made easy by the Reranker Framework, which provides specialized
-\texttt{FeatureExtractor} implementations that can ``extract'' precomputed
-features from files.%
-\footnote{The class \texttt{AbstractFileBackedFeatureExtractor} is the base
-class for such feature extractors.%
-} The class \texttt{ExecutiveFeatureExtractor} handles the run-time
+been precomputed but are sitting in separate files on disk.%
+\footnote{The class \texttt{ExecutiveFeatureExtractor} handles the run-time
 construction and initialization of a suite of \texttt{FeatureExtractor}\emph{
-}instances to be run on each problem instance at run-time.
+}instances to be run on each problem instance at run-time.}
 %It uses an internal \texttt{Factory} instance to accomplish this. 
 
 
