@@ -573,9 +573,7 @@ interpreted language syntax.}
 \end{figure}
 
 
-As you can see, the \texttt{Person} class has three data members,
-one of which happens to be an instance of another class called \texttt{Date}.
-In this case, all of the initialization of a \texttt{Person} happens
+As you can see, all of the initialization of a \texttt{Person} happens
 in the initialization phase of the constructor\textemdash{}the part
 after the colon but before the declaration phase block. By convention,
 each parameter to the constructor has a name nearly identical to the
@@ -586,10 +584,7 @@ the following:
 \begin{lyxcode}
 Person~fred(\textquotedbl{}Fred\textquotedbl{},~Date(1990,~1,~10))
 \end{lyxcode}
-If \texttt{Person} were a \texttt{Factory}-constructible type in the
-Reranker Framework, we would be able to specify the following as a
-specification string to tell the \texttt{Factory} how to construct
-a \texttt{Person} instance for Fred:
+In ReFr's interpreted language, this becomes:
 \begin{lyxcode}
 Person(name(\textquotedbl{}Fred\textquotedbl{}),\\
 ~~~~~~birthday(Date(year(1990),~month(1),~day(10))));
