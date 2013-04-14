@@ -645,10 +645,11 @@ While C++ does not allow dyanamic object instantiation ``for free'',
 we have kept the burden on the programmer very low, with macros that
 make it easy to declare a \texttt{Factory} for an abstract base class,
 as well as macros to make it easy to declare concrete implementations
-that should be \texttt{Factory}-constructible.  Also, each
-\texttt{Factory}-constructible abstract type needs to implement a
-single method called \texttt{RegisterInitializers} to specify the
-names of its data members that this language can initialize.
+that should be \texttt{Factory}-constructible.
+%Also, each
+%\texttt{Factory}-constructible abstract type needs to implement a
+%single method called \texttt{RegisterInitializers} to specify the
+%names of its data members that this language can initialize.
 
 
 The Reranker Framework contains an extremely portable, lightweight
@@ -658,10 +659,8 @@ general form of each assignment statement read by the interpreter is:
 <variable\_name> = <object>;
 \end{lyxcode}
 \normalsize
-where \inlinecode{<object>} is either a C++ primitive literal---one of
-\inlinecode{\{bool,int,double,string\}}---an array of C++ primitives, a
-Factory-constructible type or an array of Factory-constructible types
-that all have the same abstract type.  Arrays are expressed identically to array literals in C++, by surrounding a comma-separated list of objects with braces.  Underlying, they are implemented using \inlinecode{std::vector}. Figure \ref{fig:interpreter-config} shows an example of a ReFr configuration file.
+where \inlinecode{<object>} is either a C++ primitive literal, a
+Factory-constructible type or an array of primitives or Factory-constructible objects of the same run-time type. Figure \ref{fig:interpreter-config} shows an example of a ReFr configuration file.
 
 
 \begin{figure}
@@ -800,10 +799,7 @@ Framework makes this easy, once again using the interpreted language
 for specifying which feature extractors to use.
 For even more flexibility, ReFr allows the combining of features that
 are extracted on the fly with different sets of features that have
-been precomputed but are sitting in separate files on disk.%
-\footnote{The class \texttt{ExecutiveFeatureExtractor} handles the run-time
-construction and initialization of a suite of \texttt{FeatureExtractor}\emph{
-}instances to be run on each problem instance at run-time.}
+been precomputed but are sitting in separate files on disk, using the \texttt{ExecutiveFeatureExtractor} class.
 %It uses an internal \texttt{Factory} instance to accomplish this. 
 
 
