@@ -358,11 +358,9 @@ interface---let's call it \texttt{Model}---that specifies a \emph{virtual
 function} for each operation that a researcher might want to experiment
 with. For example, since one might want to experiment with different
 definitions for the $\Call{NeedToUpdate}{}()$ method, one could simply
-add it to \texttt{Model}. In C++, this would look something like Figure
-\ref{fig:model-interface}.
-
-\begin{figure}
+add it to \texttt{Model}. In C++, this would look something like
 \begin{lyxcode}
+\scriptsize
 class~Model~\{
 
 ~public:
@@ -379,10 +377,8 @@ class~Model~\{
 
 \};
 \end{lyxcode}
-\caption{\label{fig:model-interface}A first stab at defining a \texttt{Model}
-interface in C++.}
-\end{figure}
-
+\normalsize
+\vspace{-0.2in}
 
 This works well for flexibility, but consider the case where the researcher
 wants to experiment with the various, largely orthogonal definitions
@@ -498,31 +494,31 @@ user to instantiate objects statically does not even begin to address
 the issue of feature function exploration. When we explore different
 features---different ways of defining the $F$ feature functions that
 constitute $\Phi$---we would ideally like to specify which ones we
-wish to employ at run-time.
+wish to employ at run-time.  The basic solution is to use a dynamic factory, but the normal mechanisms of constructing objects by specifying their run-time types via text strings are not powerful or flexible enough for creating complex objects that wrap other objects.
 
-The basic solution is to use a dynamic factory: a special class with
-a method that takes an object that is easily-specified at run-time,
-such as a \texttt{string}, as a parameter and returns a concrete instance
-of an abstract type, where the concrete type is determined by that
-input parameter. For example, suppose we have our abstract base type
-\texttt{Model} with a concrete implementation called \texttt{PerceptronModel}.
-In C++, we would like to be able to write code like
-\begin{lyxcode}
-//~elsewhere,~perhaps~in~our~main~method
-
-Factory<Model>~model\_factory;
-
-Model~{*}perceptron\_model~=
-
-~~model\_factory.Create(\textquotedbl{}PerceptronModel\textquotedbl{});
-
-//...
-\end{lyxcode}
-Having such \texttt{Factory} instances for dynamic object instantiation
-goes a long way toward making the system easy and flexible, but we
-would ideally like to specify how to construct entire complex objects,
-such as the \texttt{Model} that contains concrete instances of other
-interfaces.
+%The basic solution is to use a dynamic factory: a special class with
+%a method that takes an object that is easily-specified at run-time,
+%such as a \texttt{string}, as a parameter and returns a concrete instance
+%of an abstract type, where the concrete type is determined by that
+%input parameter. For example, suppose we have our abstract base type
+%\texttt{Model} with a concrete implementation called \texttt{PerceptronModel}.
+%In C++, we would like to be able to write code like
+%\begin{lyxcode}
+%//~elsewhere,~perhaps~in~our~main~method
+%
+%Factory<Model>~model\_factory;
+%
+%Model~{*}perceptron\_model~=
+%
+%~~model\_factory.Create(\textquotedbl{}PerceptronModel\textquotedbl{});
+%
+%//...
+%\end{lyxcode}
+%Having such \texttt{Factory} instances for dynamic object instantiation
+%goes a long way toward making the system easy and flexible, but we
+%would ideally like to specify how to construct entire complex objects,
+%such as the \texttt{Model} that contains concrete instances of other
+%interfaces.
 
 
 \subsubsection{Dynamic instantiation of complex objects}
@@ -561,17 +557,13 @@ syntax for this interpreted language, let's look at a simple C++ class called
 
 ~~public:
 
-~~~~Person(const~string~\&name,~int~cm\_height,\\
+~~~~Person(const~string~\&name,~const~Date~\&birthday)~:
 
-~~~~~~~~~~~const~Date~\&birthday)~:
-
-~~~~~~name\_(name),~cm\_height\_(cm\_height),\\
-
-~~~~~~birthday\_(birthday)~\{~\}
+~~~~~~name\_(name),~birthday\_(birthday)~\{~\}
 
 ~~private:
 
-~~~string~name\_;~int~cm\_height\_;~Date~birthday\_;
+~~~string~name\_;~Date~birthday\_;
 
 ~\};
 \end{lyxcode}
@@ -592,16 +584,15 @@ a \texttt{Person} instance for someone named \textquotedblleft{}Fred\textquotedb
 who was 180 cm tall and was born January 10th, 1990, we could write
 the following:
 \begin{lyxcode}
-Person~fred(\textquotedbl{}Fred\textquotedbl{},~180,~Date(1990,~1,~10));
+Person~fred(\textquotedbl{}Fred\textquotedbl{},~Date(1990,~1,~10))
 \end{lyxcode}
 If \texttt{Person} were a \texttt{Factory}-constructible type in the
 Reranker Framework, we would be able to specify the following as a
 specification string to tell the \texttt{Factory} how to construct
 a \texttt{Person} instance for Fred:
 \begin{lyxcode}
-Person(name(\textquotedbl{}Fred\textquotedbl{}),~cm\_height(180),
-
-~~~~~~~birthday(Date(year(1990),~month(1),~day(10))))
+Person(name(\textquotedbl{}Fred\textquotedbl{}),\\
+~~~~~~birthday(Date(year(1990),~month(1),~day(10))));
 \end{lyxcode}
 As you can see, the syntax is very similar to that of C++. It is,
 to a first approximation, a combination of the parameter list and
