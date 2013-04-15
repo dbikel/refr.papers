@@ -99,7 +99,9 @@ models, but can be applied to any reranking problem.  The framework is
 designed with parallelism and scalability in mind, being able to run
 on any Hadoop cluster out of the box.  While extremely efficient, ReFr
 is also quite flexible, allowing researchers to explore a wide variety
-of features and learning methods.
+of features and learning methods.  ReFr has been used for building
+state-of-the-art discriminative LM's for both speech recognition and
+machine translation systems.
 
 
 %% ReFr was released in November, 2012 on Google Code
@@ -151,7 +153,6 @@ immediate research problem of exploring confusions for discriminative
 language modeling, but also the more general problem of reranking
 approaches to speech and language processing, including structured
 prediction. We designed ReFr to have the following properites:
-\vspace{-0.1in}
 \begin{itemize}[noitemsep]
 \item ``library quality'' code
 \item industrial strength
@@ -181,18 +182,17 @@ as machine translation hypergraphs or other, problem-specific data types.
 
 \subsection{\label{sub:protobufs}Google Protocol Buffers}
 
-Supervised machine learning is based on the supply of labeled (supervised)
-examples from which a model is trained.  A training algorithm is used to induce
-the model which best explains the supervised data, while at the same time being
-robust to data not seen in the supervised dataset (what is referred to as
-the generalization of a model).  The general paradigm is true for all supervised
-training algorithms and is also true in the discriminative training algorithms
-we use for our experiments in this project. Although not critical when building
-a small system which expects relatively little variation in the input data, the
-open-source toolkit we have developed is meant to be flexible enough to allow
-for a variety of data sources.
+%Supervised machine learning is based on the supply of labeled (supervised)
+%examples from which a model is trained.  A training algorithm is used to induce
+%the model which best explains the supervised data, while at the same time being
+%robust to data not seen in the supervised dataset (what is referred to as
+%the generalization of a model).  The general paradigm is true for all supervised
+%training algorithms and is also true in the discriminative training algorithms
+%we use for our experiments in this project. Although not critical when building
+%a small system which expects relatively little variation in the input data,
 
-In order to avoid the need for overly complex data formats, we have
+ReFr is meant to be flexible enough to allow
+for a variety of data sources. In order to avoid the need for overly complex data formats, we have
 chosen to adopt a formalism which allows one to augment the input
 format, allowing for flexible feature extraction and data manipulation/analysis.
 We opted to use a data format which mirrors the data-structures that
@@ -589,7 +589,7 @@ In ReFr's interpreted language, this becomes:
 Person(name(\textquotedbl{}Fred\textquotedbl{}),\\
 ~~~~~~birthday(Date(year(1990),~month(1),~day(10))));
 \end{lyxcode}
-As you can see, the syntax is very similar to that of C++. It is,
+The syntax is intentionally very similar to that of C++. It is,
 to a first approximation, a combination of the parameter list and
 the initialization phase of a C++ constructor.
 
