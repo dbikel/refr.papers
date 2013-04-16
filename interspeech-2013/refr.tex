@@ -855,8 +855,8 @@ training in \cite{mcdonald10distributed,hall10distributed} and use the
 \caption{Iterative Parameter Mixtures Perceptron}
 \label{alg:IPM}
 \begin{algorithmic}
-  \State \Comment{Break $S$ into $K$ partitions}
-  \State $S=\{D^{1},\ldots,D^{j},\ldots,D^{K}\}$ \Comment{e.g., $D^{1}={(x_{1}^{1},y_{1}^{1})\ldots(x_{S/K}^{1},y_{S/K}^{1})}$}
+  \State $S=\{D^{1},\ldots,D^{j},\ldots,D^{K}\}$
+  \State \Comment{Break $S$ into $K$ partitions, e.g., $D^{1}={(x_{1}^{1},y_{1}^{1})\ldots(x_{S/K}^{1},y_{S/K}^{1})}$}
   \State $t=0$
   \Repeat
     \State $t=t+1$
@@ -864,13 +864,12 @@ training in \cite{mcdonald10distributed,hall10distributed} and use the
       \State $\theta_{t}^{j}=\theta_{t-1}$
       \For{$i=1\ldots|D^{j}|$}
         \If {$\hat{y}_{i}\ne y_{i}$}
-          \State \Comment{Update model Parameters}
-          \State $\theta_{t}^{j}=\theta_{t}^{j}+\Phi(y_{i})-\Phi(\hat{y}_{i})$
+          \State $\theta_{t}^{j}=\theta_{t}^{j}+\Phi(y_{i})-\Phi(\hat{y}_{i})$ \Comment{Update model Parameters}
         \EndIf
       \EndFor
       \State $\Delta^{j}=\theta_{t}^{j}-\theta_{t-1}$
     \EndFor
-    \For{$l=1\ldots|w|$} \Comment{For each feature in the model (can be done in parallel)}
+    \For{$l=1\ldots|w|$} \Comment{For each feature (can be done in parallel)}
       \State $\theta_{t}(l)=\theta_{t-1}(l)+\frac{1}{K}\sum_{j}\Delta^{j}(l)$
     \EndFor
   \Until{converged}
