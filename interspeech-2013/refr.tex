@@ -89,12 +89,11 @@
 %
 \begin{abstract}
 
-ReFr is a software architecture for specifying, training and using
-reranking models. Reranking models take the n-best output of some
+ReFr (\texttt{http://refr.googlecode.com}) is a software architecture for specifying, training and using
+reranking models, which take the n-best output of some
 existing system and produce new scores for each of the n hypotheses
 that potentially induce a different ranking, ideally yielding better
-results than the original system. The Reranker Framework (ReFr for
-short) has some special support for building discriminative language
+results than the original system. The Reranker Framework has some special support for building discriminative language
 models, but can be applied to any reranking problem.  The framework is
 designed with parallelism and scalability in mind, being able to run
 on any Hadoop cluster out of the box.  While extremely efficient, ReFr
@@ -935,12 +934,15 @@ MapReduce framework, providing a mechanism for encoding protocol buffers
 into file-formats that can be partitioned by the Hadoop MapReduce
 system.
 
+\section{Conclusion}
+ReFr (\texttt{http://refr.googlecode.com}) is an open-source toolkit that enables researchers and practitioners in speech recognition and NLP to build reranking models.  It comes with some special support for building discriminative language models, but can be applied to any reranking or structured prediction problem.  ReFr not only provides built-in support for distributed training via Hadoop, but also gives researchers an incredibly powerful and flexible mechanism to explore different models and learning methods.
+
 \section{Acknowledgements}
 The authors would like to thank Prof.\ Brian Roark of Oregon Health and
 Science University for leading a fantastic team at the 2011 Johns
 Hopkins Workshop, and we would also like to thank all of our teammates
-for their invaluable feedback and contributions in the creation of
-ReFr.
+for their helpful feedback and contributions in the creation of
+ReFr.  Finally, we would like to thank  Prof.~Izhak Shafran of Oregon Health and Science University and Ph.D. candidate Maider Lehr, who are currently using ReFr for building discriminative pronunciation models for automatic speech recognition.  Their feedback has been invaluable.
 
 \newpage
 %
