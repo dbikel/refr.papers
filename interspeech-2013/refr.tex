@@ -5,6 +5,7 @@
 \usepackage{array}
 \usepackage{url}
 \usepackage{enumitem}
+\usepackage{comment}
 
 % Make it easier to write code inline.
 \newcommand\inlinecode[1]{\scriptsize\texttt{#1}\normalsize}
@@ -179,7 +180,7 @@ n-best lists than it is for designing schemes to take speech lattices as well
 as machine translation hypergraphs or other, problem-specific data types.
 
 
-\subsection{\label{sub:protobufs}Google Protocol Buffers}
+%\subsection{\label{sub:protobufs}Google Protocol Buffers}
 
 %Supervised machine learning is based on the supply of labeled (supervised)
 %examples from which a model is trained.  A training algorithm is used to induce
@@ -229,6 +230,7 @@ for access to the data.\footnote{For the 2011 Johns Hopkins Workshop, we were ta
 %% the \emph{protoview} tool, found in the repository at:
 %%  \begin{verbatim} ./lm-confusion/dataconvert/mtnbestproto \end{verbatim}
 
+\begin{comment}
 \subsection{Protocol Buffer Snippet}
 
 The following is a snippet of the protocol buffer specification for the
@@ -261,7 +263,7 @@ format).
 %./refr/src/proto/model.proto
 %./refr/src/proto/data.proto
 %\end{verbatim}
-
+\end{comment}
 
 \section{Core learning framework}
 
@@ -282,6 +284,7 @@ data $D$, which is the purpose of the $\Call{Evaluate}{D}$ line
 in the $\Call{Train}{T}$ procedure.
 
 \begin{algorithm}
+\tiny
 Let $e_{i}=\{c_{1},\ldots,c_{k}\}$ be a \emph{training example},
 where each $c_{j}$ is a \emph{candidate hypothesis}.
 
@@ -293,7 +296,7 @@ Finally, let $\mathcal{K}$ be a \emph{kernel function}.
 % redefine \ForAll so it comes out as "foreach"
 \renewcommand\algorithmicforall{\textbf{foreach}}
 \begin{algorithmic}
-\scriptsize
+\tiny
 \Procedure{Train}{$T = \{e_1, \ldots, e_n\}, D = \{d_1,\ldots,d_m\}$}
   \While{\Call{NeedToKeepTraining}{}()}
     \State \Call{TrainOneEpoch}{$T$}
@@ -335,16 +338,20 @@ against and $R_{t}$ is a \emph{learning rate} or \emph{step size}.
 Most often, $y_{\mathrm{oracle}}$ is defined to pick the hypothesis
 with the lowest loss relative to some gold-standard truth, and $\hat{y}$
 is defined to pick the candidate hypothesis that scores highest under
-the current model $w_{t}$. Under this scheme, we would technically
+the current model $w_{t}$.
+\begin{comment}
+Under this scheme, we would technically
 not need a separate $ $$\Call{NeedToUpdate}{}()$ predicate, because
 when $y_{\mathrm{oracle}}\left(e_{i}\right)=\hat{y}\left(e_{i}\right)$,
 the basic udpate shown in Equation \ref{eq:perceptron-update} is
 a ``no op''. In general, however, we would like the flexibility
 of defining an arbitrary predicate to determine whether an update
 is required.
+\end{comment}
 
-
+\begin{comment}
 \subsection{Flexibility without sacrifice}
+\end{comment}
 
 Most of the variations of this basic learning method involve finding
 different ways of defining $R_{t}$, $\Phi$, $y_{\mathrm{oracle}}$
@@ -354,6 +361,7 @@ our Reranker Framework to make it easy for the researcher to define
 these various functions, as well as to specify which ones to use at
 run-time.
 
+\begin{comment}
 An easy way to design a \emph{flexible} system is to have a basic
 interface---let's call it \texttt{Model}---that specifies a \emph{virtual
 function} for each operation that a researcher might want to experiment
@@ -387,18 +395,23 @@ all the other functions. The way one would do this in any object-oriented
 setting would be to define a concrete implementation of the \texttt{Model}
 interface for each instantiation of the cross product of possible
 variants one wanted to explore. Such an approach quickly becomes unwieldy.
+\end{comment}
 
-A more flexible approach is to use \emph{dynamic composition. }That is, we
+ReFr defines a \texttt{Model} interface with \emph{virtual methods} for all of the functions shown in Algorithm \ref{alg:basic-perceptron}.  To avoid the exponential blow-up of overriding different combinations of these methods, ReFr also employs \emph{dynamic composition. } That is, we
 keep\emph{ }the idea of a \texttt{Model} interface, but additionally
 have each \texttt{Model} instance wrap a set of predicate/manipulator
 objects, each of which itself conforms to an interface. Figure \ref{fig:pictorial-view-of-model}
-shows a pictorial representation of this scheme. Crucially, a \texttt{Model}
+shows a pictorial representation of this scheme.
+
+\begin{comment}
+Crucially, a \texttt{Model}
 instance \noun{has-a} \texttt{Updater} instance,\texttt{ }and the
 \texttt{Updater} interface specifies to use the \texttt{Model} interface,
 and similarly for other objects with which a \texttt{Model} is composed.
 This mutually recursive relationship is what gives this scheme its
 great flexibility without the complexity associated with creating
 impossibly many implementations of the \texttt{Model} interface.
+\end{comment}
 %The outline of this approach in C++ is shown in Figure
 %\ref{fig:model-with-composition}.
 \begin{figure}
@@ -479,12 +492,20 @@ functions needed to carry out model training.}
 %% \end{figure}
 
 
-
+\begin{comment}
 \subsection{Dynamic object instantiation}
+\end{comment}
 
 As we discussed above, we employ dynamic composition to avoid defining
 a new subclass of \texttt{Model} every time we wish to explore a new
-combination of learning method functions. But how do we actually instantiate
+combination of learning method functions. To do this, ReFr includes a very lightweight and yet powerful interpreter for a language that allows for assignment statements for primitives, vectors of primitives, Factory-constructible objects and vectors of Factory-constructible objects.  Figure \ref{fig:interpreter-config} shows an example ReFr configuration file. The syntax is intentionally very similar to that of C++.
+\begin{comment}
+It is, to a first approximation, a combination of the parameter list and the initialization phase of a C++ constructor.
+\end{comment}
+This lightweight language provides a flexible mechanism by which to specify feature extraction, training and inference shall occur.
+
+\begin{comment}
+But how do we actually instantiate
 a specific, concrete \texttt{Model} implementation with concrete implementations
 of the objects with which it must be composed? We can certainly write
 a line---several lines---of code to do this, but if we do that, we
@@ -591,7 +612,7 @@ Person(name(\textquotedbl{}Fred\textquotedbl{}),\\
 The syntax is intentionally very similar to that of C++. It is,
 to a first approximation, a combination of the parameter list and
 the initialization phase of a C++ constructor.
-
+\end{comment}
 
 %% \subsubsection{Interpreted language details}
 
@@ -639,6 +660,7 @@ the initialization phase of a C++ constructor.
 
 %\subsubsection{Putting it all together}
 
+\begin{comment}
 While C++ does not allow dyanamic object instantiation ``for free'',
 we have kept the burden on the programmer very low, with macros that
 make it easy to declare a \texttt{Factory} for an abstract base class,
@@ -653,11 +675,11 @@ that should be \texttt{Factory}-constructible.
 The Reranker Framework contains an extremely portable, lightweight
 interpreter of assignment statements in this C++-like language, where each right-hand side value is either a C++ primitive literal, a
 Factory-constructible type or an array of primitives or Factory-constructible objects of the same run-time type. Figure \ref{fig:interpreter-config} shows an example of a ReFr configuration file.
-
+\end{comment}
 
 \begin{figure}
 \begin{lyxcode}
-\scriptsize
+\tiny
 model\_file = \textquotedbl my\_model\_file\textquotedbl;  // model output file
 
 model =\\
@@ -778,6 +800,7 @@ devtest\_files = \{\textquotedbl dev1.gz\textquotedbl,
 %% object.
 
 
+\begin{comment}
 \subsection{Feature extraction}
 
 Another area that should be maximally flexible and yet easy to use
@@ -793,8 +816,9 @@ For even more flexibility, ReFr allows the combining of features that
 are extracted on the fly with different sets of features that have
 been precomputed but are sitting in separate files on disk, using the \texttt{ExecutiveFeatureExtractor} class.
 %It uses an internal \texttt{Factory} instance to accomplish this. 
+\end{comment}
 
-
+\begin{comment}
 \subsection{Training}
 
 The traditional way to train a model for classification, reranking
@@ -809,10 +833,12 @@ in memory. The Reranker Framework allows both the memory-intensive
 way of training as well as this ``streaming mode'' version of training.
 Crucially, training in ``streaming mode'' is essential to providing
 the distributed training framework, described in the next section.
+\end{comment}
 
 
 \section{Cluster-based distributed training}
 
+\begin{comment}
 Learning techniques which are able to exploit unlabeled examples for
 training models often fall under the name semi-supervised learning;
 however, there are additional techniques which make use of unlabeled
@@ -838,6 +864,14 @@ technique which collects statistics from each of the subsets, make
 an update to a global model and sends that model back to the clusters
 for the next iteration (epoch) of training. This is applied in the
 standard distributed gradient computation techniques.
+\end{comment}
+
+As Algorithm \ref{alg:basic-perceptron}
+shows, the basic perceptron algorithm involves ``online'' updating,
+and thus it is possible to read in each training example from file
+each time it is needed, only keeping the model's parameters persistently
+in memory. The Reranker Framework allows both the memory-intensive
+way of training as well as this ``streaming mode'' version of training, essential for distributed learning.
 
 The structured perceptron \cite{Collins02b} and it's variants have proven to
 be effective in supervised, discriminative language modeling work
@@ -847,8 +881,9 @@ algorithms, which are, by definition, online learning algorithms. Identifying th
 optimal solution for a distributed online optimization algorithm is still an open
 research question. We borrow from our previous work on distributed perceptron
 training in \cite{mcdonald10distributed,hall10distributed} and use the
-\emph{Iterative Parameter Mixtures} algorithm for distributed computation.
+\emph{Iterative Parameter Mixtures} algorithm for distributed computation.  The Reranker Framework makes it easy to switch between single processor and distributed training.
 
+\begin{comment}
 \subsection{Iterative Parameter Mixtures}
 \begin{algorithm}[h]
 \scriptsize
@@ -932,41 +967,19 @@ We have designed the training library to interact naturally with the
 MapReduce framework, providing a mechanism for encoding protocol buffers
 into file-formats that can be partitioned by the Hadoop MapReduce
 system.
+\end{comment}
 
-\begin{table}[ht]
-  \begin{tabular}{r|r|r|r}
-  \hline
-  \small
-  \textbf{\# Training} & \textbf{\# Params} & \textbf{min/epoch} & \textbf{WER}\\
-  \hline
-  baseline & - & - & 32.36\\
-  270k & 1.9m & 3 & 31.05\\
-  1.3m & 6.8m & 10 & 30.93\\
-  \hline
-  \end{tabular}
-  \caption{\label{tab:experiments}Results on development data for two different
-  models trained with the REFR Hadoop interface.  The
-  number of training examples, and the number of parameters in the trained model
-  as well as the training time per epoch are shown.  In both cases, we
-  distributed training using 100 shards for the distributed model representation
-  (100 reducer nodes).}
-\end{table}
-  
-Table~\ref{tab:experiments} presents two example runs of the REFR Hadoop
-implementation.  We evaluated on a test set of 32k examples
-from the IBM Fischer dataset\cite{fischeribm}.  We train REFR on
-100-best lists generated by a baseline ASR system on Fischer data of different
-sizes.
+\section{Demo Plan}
+Our demo will consist of a walk-through of all ReFr's features, followed by a hands-on demonstration of how easy it is to implement a new class of features for the reranker based on the rank of each candidate hypothesis.  We will also show how easy it is to integrate that new class of features into training and inference.  We will then demonstrate the ease with which one can use the API and the interpreted configuration language to alter the training algorithm.  Finally, we will demonstrate the simple way that a user can switch from single processor training to large-scale distributed training.
 
-\section{Conclusion}
+\begin{comment}
 ReFr (\texttt{http://refr.googlecode.com}) is an open-source toolkit that enables researchers and practitioners in speech recognition and NLP to build reranking models.  It comes with some special support for building discriminative language models, but can be applied to any reranking or structured prediction problem.  ReFr not only provides built-in support for distributed training via Hadoop, but also gives researchers an incredibly powerful and flexible mechanism to explore different models and learning methods.
+\end{comment}
 
 \section{Acknowledgements}
 The authors would like to thank Prof.\ Brian Roark of Oregon Health and
 Science University for leading a fantastic team at the 2011 Johns
-Hopkins Workshop, and we would also like to thank all of our teammates
-for their helpful feedback and contributions in the creation of
-ReFr.  Finally, we would like to thank  Prof.~Izhak Shafran of Oregon Health and Science University and Ph.D. candidate Maider Lehr, who are currently using ReFr for building discriminative pronunciation models for automatic speech recognition.  Their feedback has been invaluable.
+Hopkins Workshop, and we would also like to thank all of our teammates, especially Prof.~Izhak Shafran of OHSU and Ph.D. candidate Maider Lehr.
 
 \newpage
 %
