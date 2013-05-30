@@ -830,7 +830,7 @@ shows, the basic perceptron algorithm involves ``online'' updating,
 and thus it is possible to read in each training example from file
 each time it is needed, only keeping the model's parameters persistently
 in memory. The Reranker Framework allows both the memory-intensive
-way of training as well as this ``streaming mode'' version of training.
+way of training as well as a ``streaming mode'' version of training.
 Crucially, training in ``streaming mode'' is essential to providing
 the distributed training framework, described in the next section.
 \end{comment}
@@ -881,7 +881,7 @@ algorithms, which are, by definition, online learning algorithms. Identifying th
 optimal solution for a distributed online optimization algorithm is still an open
 research question. We borrow from our previous work on distributed perceptron
 training in \cite{mcdonald10distributed,hall10distributed} and use the
-\emph{Iterative Parameter Mixtures} algorithm for distributed computation.  The Reranker Framework makes it easy to switch between single processor and distributed training.
+\emph{Iterative Parameter Mixtures} algorithm for distributed computation.  The Reranker Framework makes it easy to switch between single processor and distributed training, which uses the Hadoop implementation of MapReduce \cite{dean08mapreduce}.
 
 \begin{comment}
 \subsection{Iterative Parameter Mixtures}
