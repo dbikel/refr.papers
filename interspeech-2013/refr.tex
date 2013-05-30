@@ -284,7 +284,7 @@ data $D$, which is the purpose of the $\Call{Evaluate}{D}$ line
 in the $\Call{Train}{T}$ procedure.
 
 \begin{algorithm}
-\tiny
+\scriptsize
 Let $e_{i}=\{c_{1},\ldots,c_{k}\}$ be a \emph{training example},
 where each $c_{j}$ is a \emph{candidate hypothesis}.
 
@@ -296,7 +296,7 @@ Finally, let $\mathcal{K}$ be a \emph{kernel function}.
 % redefine \ForAll so it comes out as "foreach"
 \renewcommand\algorithmicforall{\textbf{foreach}}
 \begin{algorithmic}
-\tiny
+\scriptsize
 \Procedure{Train}{$T = \{e_1, \ldots, e_n\}, D = \{d_1,\ldots,d_m\}$}
   \While{\Call{NeedToKeepTraining}{}()}
     \State \Call{TrainOneEpoch}{$T$}
