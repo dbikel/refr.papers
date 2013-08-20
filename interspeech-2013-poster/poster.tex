@@ -14,7 +14,7 @@
 
 % general
 \definecolor{Red}{rgb}{1.0,0.2,0.2}
-\definecolor{DarkRed}{rgb}{0.4,0.0,0.0}
+\definecolor{DarkRed}{rgb}{0.6,0.0,0.0}
 \definecolor{DarkGreen}{rgb}{0.0,0.4,0.0}
 %\definecolor{DarkBlue}{rgb}{0.0,0.0,0.4}
 \definecolor{DarkBlue}{rgb}{.08,.46,0.77}
@@ -34,6 +34,8 @@
 \def\bordercolor{BoundaryColor}
 \def\sectionheadcolor{BrightRed}
 \def\colsepcolor{BoundaryColor}
+
+\renewcommand{\ItemizeColour}{\color{DarkRed}}
 
 
 % Definitions.
@@ -89,8 +91,8 @@ Reranker Framework}
 % redefine \ForAll so it comes out as "foreach"
 \renewcommand\algorithmicforall{\textbf{foreach}}
 \begin{algorithmic}
-\Procedure{Train}{$T = \{e_1, \ldots, e_n\},
-                   D = \{d_1,\ldots,d_m\}$}
+\Procedure{Train}{$T~=~\{e_1, \ldots, e_n\},
+                   D~=~\{d_1,\ldots,d_m\}$}
   \While{\Call{NeedToKeepTraining}{}()}
     \State \Call{TrainOneEpoch}{$T$}
     \State \Call{Evaluate}{$D$}
@@ -114,6 +116,7 @@ Reranker Framework}
 \end{algorithmic}
 }\end{minipage}
 \begin{minipage}[t]{10cm}{
+\vspace{1cm}
   \begin{itemize}
   \item $e_{i}=\{c_{1},\ldots,c_{k}\}$ is a \emph{training example},
         each $c_{j}$ is a \emph{candidate hypothesis}.
